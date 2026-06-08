@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/BENCH/">
+    <Project Path="BENCH/Numerica.Benchmarks/Numerica.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/DOCS/">
     <File Path="DOCS/DOCS.md" />
   </Folder>

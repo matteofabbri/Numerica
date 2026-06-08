@@ -35,8 +35,10 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
   span-based fast paths.
 - **Packaging**: ship to NuGet with SourceLink, deterministic builds and symbol
   packages; publish XML docs.
-- **Benchmarks**: a BenchmarkDotNet suite tracking the cost of parsing, evaluation
-  and comparison across precisions.
+- **Benchmarks**: ✅ a BenchmarkDotNet suite (`BENCH/Numerica.Benchmarks`) tracking the
+  cost of parsing, evaluation and comparison across precisions. Run with
+  `dotnet run -c Release --project BENCH/Numerica.Benchmarks`. (This is the measurement
+  baseline for the performance work — memoising constants, caching closures.)
 - **Docs site**: expand `DOCS/` into a small documentation site (concepts, the
   expression language, the theory, API reference).
 
