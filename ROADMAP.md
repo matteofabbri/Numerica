@@ -33,8 +33,9 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
   (`TryGetRational(out BigInteger num, out BigInteger den)`, `TryGetInteger`). Still
   open: round out `INumber<Numeric>` interop, culture/format options to `ToString`, and
   span-based fast paths.
-- **Packaging**: ship to NuGet with SourceLink, deterministic builds and symbol
-  packages; publish XML docs.
+- **Packaging**: ✅ SourceLink (SDK-native), deterministic builds, a `.snupkg` symbol
+  package and XML docs are all wired up — `dotnet pack -c Release` produces the `.nupkg`
+  and `.snupkg`. Still open: the actual push to NuGet.org (a CI/credentials step).
 - **Benchmarks**: ✅ a BenchmarkDotNet suite (`BENCH/Numerica.Benchmarks`) tracking the
   cost of parsing, evaluation and comparison across precisions. Run with
   `dotnet run -c Release --project BENCH/Numerica.Benchmarks`. (This is the measurement
