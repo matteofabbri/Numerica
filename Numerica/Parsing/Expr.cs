@@ -195,6 +195,15 @@ internal abstract class Expr
             switch (Name)
             {
                 case "abs" when Arguments.Count == 1: return Arguments[0].ToRational().Abs;
+                // floor/ceil/round/trunc/sign always yield an integer, so they are
+                // rational even when the argument is irrational (floor(pi) -> 3).
+                case "floor": return new BigRational(RoundToInteger(r => r.Floor()));
+                case "ceil": return new BigRational(RoundToInteger(r => r.Ceiling()));
+                case "round": return new BigRational(RoundToInteger(r => r.Round()));
+                case "trunc": return new BigRational(RoundToInteger(r => r.Truncate()));
+                case "sign": return new BigRational(SignOfArgument());
+                case "fact":
+                case "factorial": return FactorialOfArg();
                 case "min": return MinMaxRational(wantMax: false);
                 case "max": return MinMaxRational(wantMax: true);
                 case "gcd": return GcdOfArgs();
@@ -238,6 +247,13 @@ internal abstract class Expr
                 case "asinh": return BigIrrational.Ln(a + BigIrrational.Sqrt(a * a + 1));
                 case "acosh": return BigIrrational.Ln(a + BigIrrational.Sqrt(a * a - 1));
                 case "atanh": return BigIrrational.Ln((1 + a) / (1 - a)) / 2;
+                case "floor": return BigIrrational.FromInteger(RoundToInteger(r => r.Floor()));
+                case "ceil": return BigIrrational.FromInteger(RoundToInteger(r => r.Ceiling()));
+                case "round": return BigIrrational.FromInteger(RoundToInteger(r => r.Round()));
+                case "trunc": return BigIrrational.FromInteger(RoundToInteger(r => r.Truncate()));
+                case "sign": return BigIrrational.FromInteger(SignOfArgument());
+                case "fact":
+                case "factorial": return BigIrrational.FromRational(FactorialOfArg());
                 case "min": return MinMaxIrrational(wantMax: false);
                 case "max": return MinMaxIrrational(wantMax: true);
                 case "gcd": return BigIrrational.FromRational(GcdOfArgs());
@@ -279,6 +295,8 @@ internal abstract class Expr
                 case "acosh": return BigComplex.Ln(a + BigComplex.Sqrt(a * a - BigComplex.One));
                 case "atanh":
                     return BigComplex.Ln((BigComplex.One + a) / (BigComplex.One - a)) / BigComplex.FromInteger(2);
+                case "fact":
+                case "factorial": return BigComplex.FromRational(FactorialOfArg());
                 case "abs": return BigComplex.FromReal(a.Magnitude());
                 default: throw new NotSupportedException($"Function '{Name}' is not supported on complex numbers.");
             }
@@ -288,6 +306,28 @@ internal abstract class Expr
         private static BigIrrational Asin(BigIrrational x)
             => BigIrrational.Atan2(x, BigIrrational.Sqrt(1 - x * x));
 
+        // Binary precision used to decide floor/ceil/round/trunc on a non-rational real.
+        private const int RoundingBits = 256;
+
+        // Round the argument's real value to an integer. Exact when it already folds to a
+        // rational; otherwise it is decided from a 2^-RoundingBits approximation, which is
+        // wrong only for a value that sits within that tolerance of an integer without
+        // equalling it -- a case that is undecidable in general (Richardson's theorem).
+        private BigInteger RoundToInteger(Func<BigRational, BigInteger> toInteger)
+        {
+            BigIrrational a = Arguments[0].ToIrrational();
+            BigRational value = a.TryGetRational(out BigRational exact) ? exact : a.Approximate(RoundingBits);
+            return toInteger(value);
+        }
+
+        // Sign of the argument's real value (-1, 0, +1): exact for a rational, numeric
+        // for a closed-form real.
+        private int SignOfArgument()
+        {
+            BigIrrational a = Arguments[0].ToIrrational();
+            return a.TryGetRational(out BigRational exact) ? exact.Sign : a.SignApprox();
+        }
+
         // The integer degree n of root(x, n), taken from the second argument.
         private int RootDegree()
         {
@@ -295,6 +335,20 @@ internal abstract class Expr
             if (!n.IsInteger)
                 throw new NotSupportedException("root(x, n) requires an integer degree n.");
             return (int)n.Numerator;
+        }
+
+        // Factorial n! -- exact, defined only for a non-negative integer argument.
+        private BigRational FactorialOfArg()
+        {
+            if (Arguments.Count != 1)
+                throw new NotSupportedException("factorial takes exactly one argument.");
+            BigRational r = Arguments[0].ToRational();
+            if (!r.IsInteger || r.Sign < 0)
+                throw new NotSupportedException("factorial is defined only for non-negative integers.");
+
+            BigInteger result = BigInteger.One;
+            for (BigInteger k = 2; k <= r.Numerator; k++) result *= k;
+            return new BigRational(result);
         }
 
         // ----- variadic reductions: min / max / gcd / lcm / mod -----
@@ -361,6 +415,16 @@ internal abstract class Expr
             return BigRational.Mod(Arguments[0].ToRational(), Arguments[1].ToRational());
         }
 
-        public override string ToString() => $"{Name}({string.Join(", ", Arguments)})";
+        public override string ToString()
+        {
+            // Render factorial with its postfix spelling; wrap a bare unary minus so
+            // "(-3)!" never collapses to "-3!" (which parses as -(3!)).
+            if ((Name == "fact" || Name == "factorial") && Arguments.Count == 1)
+            {
+                string baseText = Arguments[0] is Negate ? $"({Arguments[0]})" : Arguments[0].ToString()!;
+                return $"{baseText}!";
+            }
+            return $"{Name}({string.Join(", ", Arguments)})";
+        }
     }
 }

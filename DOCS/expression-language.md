@@ -19,9 +19,12 @@ n.IsIrrational;          // true
 | `%` | remainder | rational, sign of the dividend: `7 % 3 == 1`, `-7 % 3 == -1` |
 | `-x` | unary minus | |
 | `x ^ y` | power | right-associative: `2^3^2 == 2^(3^2) == 512` |
+| `n!` | factorial | postfix, exact, non-negative integers; `5! == 120`. Sugar for `fact(n)` |
 | `( … )` | grouping | |
 
-Precedence, lowest to highest: `+ -` → `* / %` → unary `-` → `^`.
+Precedence, lowest to highest: `+ -` → `* / %` → unary `-` → `^` → `!`.
+Factorial binds tighter than power and unary minus, so `2^3! == 2^(3!) == 64` and
+`-3! == -(3!) == -6`. There is no double-factorial: `n!!` means `(n!)!`.
 
 ## Functions
 
@@ -37,7 +40,8 @@ Functions are called with a parenthesised, comma-separated argument list, e.g.
 | hyperbolic | `sinh(x)`, `cosh(x)`, `tanh(x)` |
 | inverse hyperbolic | `asinh(x)`, `acosh(x)`, `atanh(x)` |
 | reductions | `min(a, …)`, `max(a, …)`, `gcd(a, …)`, `lcm(a, …)` (integer), `mod(a, b)` |
-| other | `abs(x)` |
+| rounding | `floor(x)`, `ceil(x)`, `round(x)`, `trunc(x)`, `sign(x)` |
+| other | `abs(x)`, `fact(x)` / `factorial(x)` (also the postfix `x!`) |
 
 ```
 sqrt(2) * sqrt(2)     -> 2          (exact)
@@ -56,11 +60,37 @@ gcd(24, 36)           -> 12
 lcm(4, 6)             -> 12
 mod(7, 3)             -> 1
 abs(-3/4)             -> 3/4
+floor(7/2)            -> 3
+ceil(7/2)             -> 4
+round(-5/2)           -> -3          (halves round away from zero)
+trunc(-7/2)           -> -3          (toward zero)
+floor(pi)             -> 3
+sign(-sqrt(2))        -> -1
+5!                    -> 120        (postfix factorial)
+2^3!                  -> 64         (= 2^(3!))
 ```
 
 The inverse-trig functions (`asin`, `acos`, `atan`, `atan2`) are evaluated on the
 **real** level only; the inverse-hyperbolic and the rest are also defined for complex
 arguments.
+
+### Rounding and irrational arguments
+
+`floor`, `ceil`, `round` and `trunc` are **exact** on a rational argument: the result
+is computed from the reduced fraction, no evaluation involved. `round` rounds halves
+away from zero (`round(1/2) == 1`, `round(-1/2) == -1`); `trunc` cuts toward zero;
+`sign` returns `-1`, `0` or `1`.
+
+On an argument that stays **irrational** (`floor(pi)`, `floor(sqrt(2))`), the integer
+is decided from a high-precision (2⁻²⁵⁶) approximation of the value. This is the one
+place where these functions are *not* provably exact: if a transcendental value sat
+within 2⁻²⁵⁶ of an integer without actually equalling it, the result could be off by
+one — and deciding that exactly is impossible in general (Richardson's theorem; the
+same wall described under *Equality, honestly* below). For every value you are likely
+to write (`pi`, `e`, `sqrt(2)`, …) the margin is astronomically larger than the
+tolerance, so the answer is correct; the caveat matters only for adversarial inputs
+deliberately constructed to hug an integer. Roots of rationals that happen to be whole
+(`floor(sqrt(4))`) collapse to an exact rational first, so they are decided exactly.
 
 ## Constants
 
@@ -128,9 +158,15 @@ z.IsRational;           // true
 
 - `ToDecimalString(int digits)` — rounded decimal expansion (complex values print as
   `a + bi`).
+- `ToValueString()` — a compact, round-trippable string of the **computed** value (not
+  the original formula): a reduced `numerator/denominator` when the value is rational
+  (`2/6` → `"1/3"`, `sqrt(2)*sqrt(2)` → `"2"`), else the formula. Reload with
+  `new Numeric(text)`. Handy for persisting a value as a stable, canonical key.
 - `IsRational` / `IsIrrational` / `IsComplex` — classification.
 - `== < > <= >=` — exact and decidable for algebraic formulas, high-precision numeric
   otherwise.
+- `GetHashCode()` — hashes the **value**, so equal numbers written differently (`2/6`
+  and `1/3`, `sqrt(2)` and `sqrt(8)/2`) share a bucket and work as dictionary/set keys.
 - `Numeric` implements `INumber<Numeric>`, so it plugs into the standard operators and
   generic-math algorithms.
 

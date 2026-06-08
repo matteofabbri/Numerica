@@ -12,9 +12,9 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
   ratio `phi` all landed. Still open: `pow` for arbitrary real exponents (partially
   there via `exp(b·ln a)`), complex-level `asin/acos/atan/atan2`, and more named
   constants (Catalan, Euler–Mascheroni).
-- **More parser grammar**: ✅ a modulo operator `%` and the reductions
-  `min`/`max`/`gcd`/`lcm`/`mod` landed. Still open: a postfix factorial `n!`, the
-  rounding family (`floor`/`ceil`/`round`/`trunc`/`sign`), and optional implicit
+- **More parser grammar**: ✅ a modulo operator `%`, a postfix factorial `n!`, the
+  reductions `min`/`max`/`gcd`/`lcm`/`mod`, and the rounding family
+  (`floor`/`ceil`/`round`/`trunc`/`sign`) all landed. Still open: optional implicit
   multiplication (`2pi`, `3(x+1)`).
 - **Wider algebraic closure**: today `BigAlgebric`/`AlgebraicReal` builds roots of
   *rationals* and does exact arithmetic on them. Extend to roots of arbitrary

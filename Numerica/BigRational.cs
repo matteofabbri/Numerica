@@ -105,6 +105,33 @@ internal readonly struct BigRational : IEquatable<BigRational>, IComparable<BigR
         return a - b * new BigRational(truncated);
     }
 
+    // ---------- Rounding to an integer ----------
+
+    /// <summary>Largest integer &lt;= this value.</summary>
+    public BigInteger Floor()
+    {
+        BigInteger q = BigInteger.DivRem(Numerator, Denominator, out BigInteger remainder);
+        return remainder.Sign < 0 ? q - BigInteger.One : q; // Denominator > 0, so remainder's sign is the value's
+    }
+
+    /// <summary>Smallest integer &gt;= this value.</summary>
+    public BigInteger Ceiling()
+    {
+        BigInteger q = BigInteger.DivRem(Numerator, Denominator, out BigInteger remainder);
+        return remainder.Sign > 0 ? q + BigInteger.One : q;
+    }
+
+    /// <summary>The integer part, rounding toward zero.</summary>
+    public BigInteger Truncate() => Numerator / Denominator;
+
+    /// <summary>Nearest integer, rounding halves away from zero.</summary>
+    public BigInteger Round()
+    {
+        BigInteger absNum = BigInteger.Abs(Numerator);
+        BigInteger n = (2 * absNum + Denominator) / (2 * Denominator); // floor(|x| + 1/2)
+        return Numerator.Sign < 0 ? -n : n;
+    }
+
     /// <summary>Integer power (negative exponents allowed for non-zero base).</summary>
     public static BigRational Pow(BigRational value, int exponent)
     {

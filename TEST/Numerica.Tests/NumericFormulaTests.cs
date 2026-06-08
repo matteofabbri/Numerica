@@ -222,6 +222,51 @@ public class NumericFormulaTests
         Assert.Equal("√(2)", new Numeric("min(sqrt(2), sqrt(3))").AsIrrational().ToString());
     }
 
+    // ---- rounding family: floor / ceil / round / trunc / sign ----
+
+    [Theory]
+    [InlineData("floor(7/2)", 3, 1)]
+    [InlineData("floor(-7/2)", -4, 1)]
+    [InlineData("ceil(7/2)", 4, 1)]
+    [InlineData("ceil(-7/2)", -3, 1)]
+    [InlineData("trunc(7/2)", 3, 1)]
+    [InlineData("trunc(-7/2)", -3, 1)]      // toward zero, unlike floor
+    [InlineData("round(5/2)", 3, 1)]        // halves round away from zero
+    [InlineData("round(-5/2)", -3, 1)]
+    [InlineData("round(7/5)", 1, 1)]
+    [InlineData("round(8/5)", 2, 1)]
+    [InlineData("floor(4)", 4, 1)]          // already integer
+    [InlineData("sign(-3/4)", -1, 1)]
+    [InlineData("sign(5)", 1, 1)]
+    [InlineData("sign(0)", 0, 1)]
+    public void RoundingRationals(string formula, int num, int den)
+    {
+        Assert.Equal(new BigRational(num, den), new Numeric(formula).AsRational());
+    }
+
+    [Theory]
+    [InlineData("floor(pi)", 3, 1)]
+    [InlineData("ceil(pi)", 4, 1)]
+    [InlineData("round(pi)", 3, 1)]
+    [InlineData("trunc(pi)", 3, 1)]
+    [InlineData("floor(sqrt(2))", 1, 1)]
+    [InlineData("ceil(sqrt(2))", 2, 1)]
+    [InlineData("floor(-e)", -3, 1)]        // -e ~= -2.718 -> -3
+    [InlineData("round(e)", 3, 1)]
+    [InlineData("sign(-sqrt(2))", -1, 1)]
+    public void RoundingIrrationals(string formula, int num, int den)
+    {
+        // Decided from a high-precision approximation; exact for any non-adversarial value.
+        Assert.Equal(new BigRational(num, den), new Numeric(formula).AsRational());
+    }
+
+    [Fact]
+    public void FloorOfPerfectRootIsExact()
+    {
+        // sqrt(4) folds to the rational 2, so floor is decided exactly, not numerically.
+        Assert.Equal(new BigRational(2), new Numeric("floor(sqrt(4))").AsRational());
+    }
+
     // Numeric (decimal-expansion) equality, the honest test for transcendental formulas.
     private static void AssertSameValue(string formula, string expected, int digits = 40)
         => Assert.Equal(

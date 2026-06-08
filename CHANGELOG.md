@@ -8,9 +8,23 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Postfix factorial `n!`** — exact, for non-negative integers; sugar for `fact(n)`
+  (also spelled `factorial(n)`). Binds tighter than `^` and unary minus, so `2^3!` is
+  `2^(3!)` and `-3!` is `-(3!)`. There is no double-factorial: `n!!` means `(n!)!`.
+- **Value-based `GetHashCode`** — `Numeric` now hashes its *value* instead of returning
+  a constant, so equal numbers written differently (`2/6` and `1/3`, `sqrt(2)` and
+  `sqrt(8)/2`) share a bucket and work as dictionary/set keys. Consistent with `==` up
+  to the same precision `==` itself uses (exact consistency is undecidable for
+  transcendentals — Richardson's theorem).
+- **`ToValueString()`** — a compact, round-trippable serialization of the *computed*
+  value rather than the original formula: a reduced `numerator/denominator` when the
+  value collapses to a rational (so `2/6` → `1/3`, `sqrt(2)*sqrt(2)` → `2`), falling
+  back to the formula for irrational/complex values. Reload with `new Numeric(text)`.
 - **Modulo operator `%`** (rational remainder, sign of the dividend) at the same
   precedence as `*` and `/`, and the **variadic reductions** `min`, `max`, `gcd`,
   `lcm` plus the function form `mod(a, b)`.
+- **Rounding family** `floor`, `ceil`, `round` (to nearest), `trunc` (toward zero) and
+  `sign` (`-1`/`0`/`1`), each returning an exact integer.
 - **Multi-argument functions** in the formula language: function calls now take a
   comma-separated argument list, e.g. `atan2(y, x)`, `root(x, n)`, `logb(x, base)`
   and `log(x, base)`.

@@ -10,10 +10,11 @@ namespace Numerica.Parsing;
 /// Maps strings to <see cref="Expr"/> trees using the Sprache parser-combinator
 /// library. Grammar (lowest to highest precedence):
 ///
-///   expr   := term  (('+' | '-') term)*
-///   term   := unary (('*' | '/' | '%') unary)*
+///   expr   := term   (('+' | '-') term)*
+///   term   := unary  (('*' | '/' | '%') unary)*
 ///   unary  := '-' unary | power
-///   power  := atom ('^' unary)?          (right associative)
+///   power  := factor ('^' unary)?         (right associative)
+///   factor := atom '!'*                    (postfix factorial, binds tighter than '^')
 ///   atom   := number | ident '(' expr (',' expr)* ')' | ident | '(' expr ')'
 ///
 /// Number literals: integers and big integers ("123", "234...90"), decimals ("1.5"),
@@ -24,6 +25,7 @@ namespace Numerica.Parsing;
 /// exp, ln (alias log), log10, log2, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh,
 /// asinh, acosh, atanh, abs. Two-argument functions: atan2(y, x), root(x, n),
 /// logb(x, base) (and log(x, base)), mod(a, b). Variadic reductions: min, max, gcd, lcm.
+/// A postfix '!' is factorial (exact, non-negative integers): "5!" == "fact(5)" == 120.
 /// Otherwise identifiers are constants:
 /// "true"/"false" -> 1/0, pi (or the symbol π), tau/τ (2·pi), e, i, phi/φ (the golden
 /// ratio), and the omega constant (omega or the symbol Ω). Unicode escapes of the form
@@ -132,8 +134,15 @@ internal static class ExpressionParser
     private static readonly Parser<Expr> Atom =
         Number.Or(TypedLiterals).Or(IdentifierExpr).Or(Group);
 
+    // Postfix factorial: each trailing '!' wraps the value in fact(...). Binds tighter
+    // than '^', so "2^3!" is "2^(3!)" and "-3!" is "-(3!)".
+    private static readonly Parser<Expr> Factor =
+        from atom in Atom
+        from bangs in Parse.Char('!').Token().Many()
+        select bangs.Aggregate(atom, (e, _) => (Expr)new Expr.Function("fact", new[] { e }));
+
     private static readonly Parser<Expr> Power =
-        from baseValue in Atom
+        from baseValue in Factor
         from exponent in
             (from caret in Parse.Char('^').Token()
              from e in UnaryRef
