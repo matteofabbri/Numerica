@@ -44,12 +44,18 @@ internal abstract class Expr
     public sealed class Constant : Expr
     {
         public const string Pi = "pi";
+        public const string Tau = "tau";
         public const string E = "e";
         public const string I = "i";
         public const string Omega = "omega";
+        public const string Phi = "phi";
 
         public string Name { get; }
         public Constant(string name) => Name = name;
+
+        // The golden ratio (1 + sqrt(5)) / 2, kept symbolic so identities stay exact.
+        private static BigIrrational GoldenRatio
+            => (BigIrrational.One + BigIrrational.Sqrt(5)) / 2;
 
         public override BigRational ToRational()
             => throw new NotSupportedException($"'{Name}' is not rational.");
@@ -57,8 +63,10 @@ internal abstract class Expr
         public override BigIrrational ToIrrational() => Name switch
         {
             Pi => BigIrrational.Pi,
+            Tau => BigIrrational.Pi * 2,
             E => BigIrrational.E,
             Omega => BigIrrational.Omega,
+            Phi => GoldenRatio,
             I => throw new NotSupportedException("The imaginary unit 'i' is not real."),
             _ => throw new NotSupportedException($"Unknown constant '{Name}'."),
         };
@@ -66,8 +74,10 @@ internal abstract class Expr
         public override BigComplex ToComplex() => Name switch
         {
             Pi => BigComplex.FromReal(BigIrrational.Pi),
+            Tau => BigComplex.FromReal(BigIrrational.Pi * 2),
             E => BigComplex.FromReal(BigIrrational.E),
             Omega => BigComplex.FromReal(BigIrrational.Omega),
+            Phi => BigComplex.FromReal(GoldenRatio),
             I => BigComplex.ImaginaryUnit,
             _ => throw new NotSupportedException($"Unknown constant '{Name}'."),
         };
@@ -165,52 +175,110 @@ internal abstract class Expr
     public sealed class Function : Expr
     {
         public string Name { get; }
-        public Expr Argument { get; }
+        public IReadOnlyList<Expr> Arguments { get; }
 
-        public Function(string name, Expr argument)
+        public Function(string name, IReadOnlyList<Expr> arguments)
         {
             Name = name;
-            Argument = argument;
+            Arguments = arguments;
         }
 
+        /// <summary>Convenience accessor for the (sole) argument of a unary function.</summary>
+        public Expr Argument => Arguments[0];
+
         public override BigRational ToRational()
-            => Name == "abs"
-                ? Argument.ToRational().Abs
+            => Name == "abs" && Arguments.Count == 1
+                ? Arguments[0].ToRational().Abs
                 : throw new NotSupportedException($"'{Name}' does not evaluate to a rational.");
 
         public override BigIrrational ToIrrational()
         {
-            BigIrrational a = Argument.ToIrrational();
-            return Name switch
+            BigIrrational a = Arguments[0].ToIrrational();
+            switch (Name)
             {
-                "sqrt" => BigIrrational.Sqrt(a),
-                "exp" => BigIrrational.Exp(a),
-                "ln" or "log" => BigIrrational.Ln(a),
-                "sin" => BigIrrational.Sin(a),
-                "cos" => BigIrrational.Cos(a),
-                "tan" => BigIrrational.Tan(a),
-                "atan" => BigIrrational.Atan(a),
-                "abs" => a.SignApprox() < 0 ? -a : a,
-                _ => throw new NotSupportedException($"Unknown function '{Name}'."),
-            };
+                case "sqrt": return BigIrrational.Sqrt(a);
+                case "cbrt": return BigIrrational.Root(a, 3);
+                case "root": return BigIrrational.Root(a, RootDegree());
+                case "exp": return BigIrrational.Exp(a);
+                case "ln":
+                case "log":
+                    return Arguments.Count == 2
+                        ? BigIrrational.Ln(a) / BigIrrational.Ln(Arguments[1].ToIrrational())
+                        : BigIrrational.Ln(a);
+                case "logb": return BigIrrational.Ln(a) / BigIrrational.Ln(Arguments[1].ToIrrational());
+                case "log10": return BigIrrational.Ln(a) / BigIrrational.Ln(10);
+                case "log2": return BigIrrational.Ln(a) / BigIrrational.Ln(2);
+                case "sin": return BigIrrational.Sin(a);
+                case "cos": return BigIrrational.Cos(a);
+                case "tan": return BigIrrational.Tan(a);
+                case "asin": return Asin(a);
+                case "acos": return BigIrrational.Pi / 2 - Asin(a);
+                case "atan": return BigIrrational.Atan(a);
+                case "atan2": return BigIrrational.Atan2(a, Arguments[1].ToIrrational());
+                case "sinh": return (BigIrrational.Exp(a) - BigIrrational.Exp(-a)) / 2;
+                case "cosh": return (BigIrrational.Exp(a) + BigIrrational.Exp(-a)) / 2;
+                case "tanh":
+                {
+                    BigIrrational ePos = BigIrrational.Exp(a), eNeg = BigIrrational.Exp(-a);
+                    return (ePos - eNeg) / (ePos + eNeg);
+                }
+                case "asinh": return BigIrrational.Ln(a + BigIrrational.Sqrt(a * a + 1));
+                case "acosh": return BigIrrational.Ln(a + BigIrrational.Sqrt(a * a - 1));
+                case "atanh": return BigIrrational.Ln((1 + a) / (1 - a)) / 2;
+                case "abs": return a.SignApprox() < 0 ? -a : a;
+                default: throw new NotSupportedException($"Unknown function '{Name}'.");
+            }
         }
 
         public override BigComplex ToComplex()
         {
-            BigComplex a = Argument.ToComplex();
-            return Name switch
+            BigComplex a = Arguments[0].ToComplex();
+            switch (Name)
             {
-                "sqrt" => BigComplex.Sqrt(a),
-                "exp" => BigComplex.Exp(a),
-                "ln" or "log" => BigComplex.Ln(a),
-                "sin" => BigComplex.Sin(a),
-                "cos" => BigComplex.Cos(a),
-                "tan" => BigComplex.Sin(a) / BigComplex.Cos(a),
-                "abs" => BigComplex.FromReal(a.Magnitude()),
-                _ => throw new NotSupportedException($"Function '{Name}' is not supported on complex numbers."),
-            };
+                case "sqrt": return BigComplex.Sqrt(a);
+                case "cbrt": return BigComplex.Power(a, BigComplex.FromRational(new BigRational(1, 3)));
+                case "root": return BigComplex.Power(a, BigComplex.FromRational(new BigRational(1, RootDegree())));
+                case "exp": return BigComplex.Exp(a);
+                case "ln":
+                case "log":
+                    return Arguments.Count == 2
+                        ? BigComplex.Ln(a) / BigComplex.Ln(Arguments[1].ToComplex())
+                        : BigComplex.Ln(a);
+                case "logb": return BigComplex.Ln(a) / BigComplex.Ln(Arguments[1].ToComplex());
+                case "log10": return BigComplex.Ln(a) / BigComplex.Ln(BigComplex.FromInteger(10));
+                case "log2": return BigComplex.Ln(a) / BigComplex.Ln(BigComplex.FromInteger(2));
+                case "sin": return BigComplex.Sin(a);
+                case "cos": return BigComplex.Cos(a);
+                case "tan": return BigComplex.Sin(a) / BigComplex.Cos(a);
+                case "sinh": return (BigComplex.Exp(a) - BigComplex.Exp(-a)) / BigComplex.FromInteger(2);
+                case "cosh": return (BigComplex.Exp(a) + BigComplex.Exp(-a)) / BigComplex.FromInteger(2);
+                case "tanh":
+                {
+                    BigComplex ePos = BigComplex.Exp(a), eNeg = BigComplex.Exp(-a);
+                    return (ePos - eNeg) / (ePos + eNeg);
+                }
+                case "asinh": return BigComplex.Ln(a + BigComplex.Sqrt(a * a + BigComplex.One));
+                case "acosh": return BigComplex.Ln(a + BigComplex.Sqrt(a * a - BigComplex.One));
+                case "atanh":
+                    return BigComplex.Ln((BigComplex.One + a) / (BigComplex.One - a)) / BigComplex.FromInteger(2);
+                case "abs": return BigComplex.FromReal(a.Magnitude());
+                default: throw new NotSupportedException($"Function '{Name}' is not supported on complex numbers.");
+            }
         }
 
-        public override string ToString() => $"{Name}({Argument})";
+        // asin(x) = atan2(x, sqrt(1 - x^2)) -- robust at the endpoints x = +/-1.
+        private static BigIrrational Asin(BigIrrational x)
+            => BigIrrational.Atan2(x, BigIrrational.Sqrt(1 - x * x));
+
+        // The integer degree n of root(x, n), taken from the second argument.
+        private int RootDegree()
+        {
+            BigRational n = Arguments[1].ToRational();
+            if (!n.IsInteger)
+                throw new NotSupportedException("root(x, n) requires an integer degree n.");
+            return (int)n.Numerator;
+        }
+
+        public override string ToString() => $"{Name}({string.Join(", ", Arguments)})";
     }
 }

@@ -48,6 +48,29 @@ public sealed class Numeric : INumber<Numeric>
     /// <summary>The original formula, e.g. "sqrt(2) * sqrt(2)".</summary>
     public string Formula => _expr.ToString()!;
 
+    /// <summary>
+    /// A compact, round-trippable string of the COMPUTED value rather than the original
+    /// formula. When the value collapses to an exact rational — integers, decimals, dates
+    /// as ticks, and algebraic results like <c>sqrt(2)*sqrt(2) → 2</c> or <c>2/6 → 1/3</c>
+    /// — it is the reduced <c>numerator/denominator</c>, so equal numbers share one
+    /// representation and reload without re-evaluating the formula. Values that stay
+    /// irrational or complex (<c>sqrt(2)</c>, <c>pi</c>, ...) keep their <see cref="Formula"/>,
+    /// the only exact finite form. Reconstruct either with <c>new Numeric(text)</c>.
+    /// </summary>
+    public string ToValueString()
+        => TryRationalValue(out BigRational r) ? r.ToString() : Formula;
+
+    // True (with the reduced value) when the evaluated number is a plain real rational.
+    private bool TryRationalValue(out BigRational value)
+    {
+        BigComplex v = Value;
+        if (v.Imaginary.TryGetRational(out BigRational im) && im.IsZero
+            && v.Real.TryGetRational(out value))
+            return true;
+        value = BigRational.Zero;
+        return false;
+    }
+
     private BigComplex Value => _value ??= Evaluate();
 
     // Prefer the real (BigIrrational) interpretation -- it supports the full set of
@@ -120,8 +143,26 @@ public sealed class Numeric : INumber<Numeric>
 
     public override bool Equals(object? obj) => obj is Numeric n && Equals(n);
 
-    // Equal values may carry different formulas, so a constant hash is the safe choice.
-    public override int GetHashCode() => 0;
+    /// <summary>
+    /// Hashes the VALUE, not the formula, so numbers that are equal yet carry different
+    /// formulas (<c>2/6</c> and <c>1/3</c>, <c>sqrt(2)</c> and <c>sqrt(8)/2</c>) share a
+    /// bucket. Each part is evaluated at the comparison precision and its noisy low bits
+    /// are dropped, so two values equal up to <see cref="DefaultPrecision"/> collapse to
+    /// the same bucket. Exact, decidable consistency with <c>==</c> is impossible for
+    /// transcendentals (Richardson's theorem) — this matches equality up to the same
+    /// precision <c>==</c> itself uses, and is only ever a hashing hint.
+    /// </summary>
+    public override int GetHashCode()
+    {
+        BigComplex v = Value;
+        return HashCode.Combine(Bucket(v.Real), Bucket(v.Imaginary));
+    }
+
+    // Evaluate x*2^prec (within ~1 ulp), then drop the low bits the comparison tolerance
+    // could wobble, so values equal up to DefaultPrecision yield the same bucket.
+    private const int HashDropBits = 96;
+    private static int Bucket(BigIrrational x)
+        => (x.Compile()(DefaultPrecision) >> HashDropBits).GetHashCode();
 
     public int CompareTo(Numeric? other)
     {
@@ -149,7 +190,7 @@ public sealed class Numeric : INumber<Numeric>
     public static Numeric AdditiveIdentity => Zero;
     public static Numeric MultiplicativeIdentity => One;
 
-    public static Numeric Abs(Numeric value) => new(new Expr.Function("abs", value._expr));
+    public static Numeric Abs(Numeric value) => new(new Expr.Function("abs", new[] { value._expr }));
 
     // ---------- INumberBase classification ----------
 
@@ -299,7 +340,7 @@ public sealed class Numeric : INumber<Numeric>
             case Expr.Binary b:
                 return TryAlgebraicBinary(b, out result);
 
-            case Expr.Function f when f.Name == "sqrt" && TryRational(f.Argument, out BigRational radicand) && radicand.Sign >= 0:
+            case Expr.Function f when f.Name == "sqrt" && f.Arguments.Count == 1 && TryRational(f.Argument, out BigRational radicand) && radicand.Sign >= 0:
                 result = AlgebraicReal.Sqrt(radicand);
                 return true;
         }

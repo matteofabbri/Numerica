@@ -14,14 +14,17 @@ namespace Numerica.Parsing;
 ///   term   := unary (('*' | '/') unary)*
 ///   unary  := '-' unary | power
 ///   power  := atom ('^' unary)?          (right associative)
-///   atom   := number | ident '(' expr ')' | ident | '(' expr ')'
+///   atom   := number | ident '(' expr (',' expr)* ')' | ident | '(' expr ')'
 ///
 /// Number literals: integers and big integers ("123", "234...90"), decimals ("1.5"),
 /// scientific notation ("1.23e5", "-1.23e4", "6.02E23"), and hexadecimal ("0xFF").
-/// Identifiers are function calls when followed by '(' (sqrt, exp, ln, sin, cos, tan,
-/// atan, abs); otherwise constants: "true"/"false" -> 1/0, pi (or the symbol pi/Pi),
-/// e, i, and the omega constant (omega or the symbol Omega). Unicode escapes of the
-/// form \uXXXX in the input are decoded first, so "π" reads as pi.
+/// Identifiers are function calls when followed by '('. Unary functions: sqrt, cbrt,
+/// exp, ln (alias log), log10, log2, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh,
+/// asinh, acosh, atanh, abs. Two-argument functions: atan2(y, x), root(x, n),
+/// logb(x, base) (and log(x, base)). Otherwise identifiers are constants:
+/// "true"/"false" -> 1/0, pi (or the symbol π), tau/τ (2·pi), e, i, phi/φ (the golden
+/// ratio), and the omega constant (omega or the symbol Ω). Unicode escapes of the form
+/// \uXXXX in the input are decoded first, so "π" reads as pi.
 ///
 /// Uniform typed-literal forms spell a primitive as keyword(&lt;content&gt;), with or
 /// without double quotes (only " is used, never '): bool(true)/bool("false") -> 1/0;
@@ -62,8 +65,12 @@ internal static class ExpressionParser
 
     private static readonly Parser<Expr> Number = HexNumber.Or(DecimalNumber);
 
+    // A letter followed by letters or digits, so names like "log2", "log10" and
+    // "atan2" are single identifiers (a leading digit is always a number instead).
     private static readonly Parser<string> Identifier =
-        Parse.Letter.AtLeastOnce().Text().Token();
+        (from first in Parse.Letter
+         from rest in Parse.LetterOrDigit.Many().Text()
+         select first + rest).Token();
 
     // Forward references for the recursive grammar.
     private static readonly Parser<Expr> ExpressionRef = Parse.Ref(() => Expression);
@@ -75,13 +82,16 @@ internal static class ExpressionParser
         from close in Parse.Char(')').Token()
         select body;
 
+    // A parenthesised, comma-separated argument list: "(a)", "(a, b)", "(y, x)".
+    private static readonly Parser<IEnumerable<Expr>> ArgumentList =
+        from open in Parse.Char('(').Token()
+        from args in ExpressionRef.DelimitedBy(Parse.Char(',').Token())
+        from close in Parse.Char(')').Token()
+        select args;
+
     private static readonly Parser<Expr> IdentifierExpr =
         from name in Identifier
-        from call in
-            (from open in Parse.Char('(').Token()
-             from arg in ExpressionRef
-             from close in Parse.Char(')').Token()
-             select arg).Optional()
+        from call in ArgumentList.Optional()
         select MakeIdentifier(name, call);
 
     // A C#-style double-quoted literal, with the usual escapes (\n \t \\ \" \uXXXX \xH... \UXXXXXXXX).
@@ -149,14 +159,16 @@ internal static class ExpressionParser
 
     // ---------- builders ----------
 
-    private static Expr MakeIdentifier(string name, IOption<Expr> call)
+    private static Expr MakeIdentifier(string name, IOption<IEnumerable<Expr>> call)
     {
-        if (call.IsDefined) return new Expr.Function(name, call.Get());
+        if (call.IsDefined) return new Expr.Function(name, call.Get().ToList());
         return name switch
         {
             "true" => new Expr.Number(BigRational.One),
             "false" => new Expr.Number(BigRational.Zero),
             "π" or "Π" => new Expr.Constant(Expr.Constant.Pi),
+            "τ" => new Expr.Constant(Expr.Constant.Tau),
+            "φ" or "Φ" => new Expr.Constant(Expr.Constant.Phi),
             "Ω" or "ω" => new Expr.Constant(Expr.Constant.Omega),
             _ => new Expr.Constant(name),
         };

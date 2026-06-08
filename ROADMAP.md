@@ -6,14 +6,21 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Near term (0.x)
 
-- **More transcendental coverage**: `sinh/cosh/tanh`, `asin/acos`, `log` with an
-  arbitrary base, `pow` for arbitrary real exponents (already partially there via
-  `exp(b·ln a)`), and more named constants (Catalan, Euler–Mascheroni, golden ratio).
+- **More transcendental coverage**: ✅ `sinh/cosh/tanh`, `asin/acos`, inverse
+  hyperbolics (`asinh/acosh/atanh`), `log` with an arbitrary base (`logb`, `log10`,
+  `log2`), `cbrt`/`root(x, n)`, `atan2(y, x)`, and the constants `tau` and the golden
+  ratio `phi` all landed. Still open: `pow` for arbitrary real exponents (partially
+  there via `exp(b·ln a)`), complex-level `asin/acos/atan/atan2`, and more named
+  constants (Catalan, Euler–Mascheroni).
+- **More parser grammar**: a modulo operator `%`, a postfix factorial `n!`, the
+  reductions `min`/`max`/`gcd`/`lcm`/`mod` (need an N-ary argument list — already
+  supported by the grammar), and optional implicit multiplication (`2pi`, `3(x+1)`).
 - **Wider algebraic closure**: today `BigAlgebric`/`AlgebraicReal` builds roots of
   *rationals* and does exact arithmetic on them. Extend to roots of arbitrary
   algebraic numbers (e.g. `sqrt(1 + sqrt(2))`) so nested radicals are decided too.
 - **More typed literals**: `long`/`short`/`byte`/`decimal`/`double` aliases (with
-  optional range checks), `timespan(...)`, `guid(...)`, `ipaddress(...)`.
+  optional range checks), `rational("3/7")`, `complex("3+4i")`, `hex/bin/oct(...)`,
+  `timespan(...)`, `guid(...)`, `ipaddress(...)`.
 - **Variables & bindings** in the formula language: `let x = sqrt(2) in x*x`, plus
   user-supplied parameters for reusable expressions.
 - **Performance**: memoize evaluated constants, use binary-splitting for the series

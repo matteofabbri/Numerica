@@ -6,6 +6,23 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Multi-argument functions** in the formula language: function calls now take a
+  comma-separated argument list, e.g. `atan2(y, x)`, `root(x, n)`, `logb(x, base)`
+  and `log(x, base)`.
+- New functions: `cbrt`, `root`, `log10`, `log2`, `logb`, `asin`, `acos`, `atan2`,
+  `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`. The inverse-hyperbolic and the
+  rest also evaluate on the complex level; the inverse-trig (`asin`/`acos`/`atan2`)
+  are real-only for now.
+- New constants: `tau`/`τ` (`2·pi`) and `phi`/`φ` (the golden ratio, kept symbolic so
+  identities such as `phi^2 - phi - 1 == 0` stay exact).
+
+### Fixed
+
+- Identifiers may now contain digits after the first letter, so names like `log2`,
+  `log10` and `atan2` parse as a single token instead of being split.
+
 ## [0.1.0] - 2026-06-08
 
 First public preview.

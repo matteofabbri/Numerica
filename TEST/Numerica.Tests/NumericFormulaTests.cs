@@ -99,6 +99,92 @@ public class NumericFormulaTests
         Assert.Equal("-1", value.AsComplex().ToString());
     }
 
+    // ---- extended functions: roots, logs, inverse/hyperbolic trig ----
+
+    // Roots of rationals fold to an EXACT value at construction, so `==` is decidable.
+    [Theory]
+    [InlineData("cbrt(27)", "3")]
+    [InlineData("root(81, 4)", "3")]
+    [InlineData("root(32, 5)", "2")]
+    public void ExactRoots(string formula, string expected)
+    {
+        Assert.True(new Numeric(formula) == new Numeric(expected));
+    }
+
+    // Logs of perfect powers are integer-valued but TRANSCENDENTAL (not folded), so we
+    // compare the decimal expansion -- the honest test for non-algebraic formulas.
+    [Theory]
+    [InlineData("log10(1000)", "3")]
+    [InlineData("log2(64)", "6")]
+    [InlineData("logb(81, 3)", "4")]
+    [InlineData("log(125, 5)", "3")]
+    public void LogarithmValues(string formula, string expectedInteger)
+    {
+        Assert.Equal(expectedInteger, new Numeric(formula).ToDecimalString(0));
+    }
+
+    [Fact]
+    public void Atan2SelectsTheSecondQuadrant()
+    {
+        // atan2(1, -1) = 3*pi/4.
+        AssertSameValue("atan2(1, -1)", "3 * pi / 4");
+    }
+
+    [Fact]
+    public void AsinOfOneIsHalfPi()
+    {
+        // asin(1) = atan2(1, 0) folds to pi/2 symbolically, so this is exact.
+        Assert.True(new Numeric("2 * asin(1)") == new Numeric("pi"));
+    }
+
+    [Fact]
+    public void AcosIsTheAsinComplement()
+    {
+        // asin(x) + acos(x) = pi/2; the atan terms cancel symbolically.
+        Assert.True(new Numeric("asin(1/2) + acos(1/2)") == new Numeric("pi/2"));
+    }
+
+    [Fact]
+    public void HyperbolicPythagoreanIdentity()
+    {
+        // cosh(x)^2 - sinh(x)^2 = 1.
+        AssertSameValue("cosh(2)^2 - sinh(2)^2", "1");
+    }
+
+    [Fact]
+    public void AtanhRoundTripsThroughTanh()
+    {
+        AssertSameValue("tanh(atanh(1/3))", "1/3");
+    }
+
+    [Fact]
+    public void AsinhRoundTripsThroughSinh()
+    {
+        AssertSameValue("sinh(asinh(2))", "2");
+    }
+
+    // ---- new constants ----
+
+    [Fact]
+    public void TauIsTwoPi()
+    {
+        // tau = pi*2 and 2*pi build the same symbolic tree, so this is exact.
+        Assert.True(new Numeric("tau") == new Numeric("2 * pi"));
+    }
+
+    [Fact]
+    public void GoldenRatioConstantSatisfiesItsIdentity()
+    {
+        // phi^2 - phi - 1 == 0, exactly (phi stays symbolic).
+        Assert.Equal("0", new Numeric("phi^2 - phi - 1").AsIrrational().ToString());
+    }
+
+    // Numeric (decimal-expansion) equality, the honest test for transcendental formulas.
+    private static void AssertSameValue(string formula, string expected, int digits = 40)
+        => Assert.Equal(
+            new Numeric(expected).ToDecimalString(digits),
+            new Numeric(formula).ToDecimalString(digits));
+
     // ---- ordering and INumber<T> integration ----
 
     [Fact]

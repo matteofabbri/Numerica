@@ -24,21 +24,45 @@ Precedence, lowest to highest: `+ -` → `* /` → unary `-` → `^`.
 
 ## Functions
 
-`sqrt`, `exp`, `ln` (alias `log`), `sin`, `cos`, `tan`, `atan`, `abs`.
+Functions are called with a parenthesised, comma-separated argument list, e.g.
+`atan2(1, 1)`.
+
+| Group | Functions |
+| --- | --- |
+| roots & powers | `sqrt(x)`, `cbrt(x)`, `root(x, n)` (integer `n`) |
+| exponential & log | `exp(x)`, `ln(x)` (alias `log(x)`), `log10(x)`, `log2(x)`, `logb(x, base)`, `log(x, base)` |
+| trigonometric | `sin(x)`, `cos(x)`, `tan(x)` |
+| inverse trig | `asin(x)`, `acos(x)`, `atan(x)`, `atan2(y, x)` |
+| hyperbolic | `sinh(x)`, `cosh(x)`, `tanh(x)` |
+| inverse hyperbolic | `asinh(x)`, `acosh(x)`, `atanh(x)` |
+| other | `abs(x)` |
 
 ```
 sqrt(2) * sqrt(2)     -> 2          (exact)
+cbrt(27)              -> 3          (exact)
+root(81, 4)           -> 3          (exact)
 sin(1)^2 + cos(1)^2   -> 1
 4 * atan(1)           -> pi
+atan2(1, 1)           -> pi/4
+2 * asin(1)           -> pi
+cosh(0)               -> 1
+log10(1000)           -> 3
+logb(8, 2)            -> 3
 abs(-3/4)             -> 3/4
 ```
+
+The inverse-trig functions (`asin`, `acos`, `atan`, `atan2`) are evaluated on the
+**real** level only; the inverse-hyperbolic and the rest are also defined for complex
+arguments.
 
 ## Constants
 
 | Name | Value |
 | --- | --- |
 | `pi`  / `π` | the circle constant |
+| `tau` / `τ` | `2·pi`, the full-turn constant |
 | `e` | Euler's number |
+| `phi` / `φ` | the golden ratio `(1 + sqrt(5)) / 2` (exact, stays symbolic) |
 | `omega` / `Ω` | the omega constant `W(1)`, root of `x·e^x = 1` (~0.567) |
 | `i` | the imaginary unit (only meaningful at the complex level) |
 | `true` / `false` | `1` / `0` |
