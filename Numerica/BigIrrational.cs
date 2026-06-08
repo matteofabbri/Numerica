@@ -46,6 +46,15 @@ internal abstract class BigIrrational
     /// <summary>The omega constant W(1), root of x*e^x = 1 (symbolic leaf, evaluated via Newton).</summary>
     public static readonly BigIrrational Omega = new SymbolNode(SymbolNode.OmegaName);
 
+    /// <summary>
+    /// Catalan's constant G = (π/8)·ln(2 + √3) + (3/8)·Σ 1/((2k+1)²·C(2k,k)). Kept as a
+    /// composed expression: the closed-form prefactor reuses the tested π/ln/√ closures and
+    /// only the geometrically-convergent rational series is a new symbolic leaf.
+    /// </summary>
+    public static readonly BigIrrational Catalan =
+        Pi / 8 * Ln(FromInteger(2) + Sqrt(FromInteger(3)))
+        + FromRational(new BigRational(3, 8)) * new SymbolNode(SymbolNode.CatalanSeriesName);
+
     // ---------- Construction ----------
 
     public static BigIrrational FromRational(BigRational value) => new RationalNode(value);
@@ -558,6 +567,27 @@ internal abstract class BigIrrational
         return ScaleDown(sum, 16);
     }
 
+    private static BigInteger CatalanSeriesClosure(int bits)
+    {
+        // S = sum_{k>=0} 1 / ((2k+1)^2 * C(2k,k)), the rational part of Catalan's constant.
+        // C(2k,k) grows like 4^k, so the term ~ 1/(4^k * k^1.5): geometric, ~bits/2 terms.
+        BigInteger scale = BigInteger.One << (bits + 16);
+        BigInteger sum = BigInteger.Zero;
+        BigInteger central = BigInteger.One; // C(0, 0)
+        int k = 0;
+        while (true)
+        {
+            BigInteger odd = 2 * k + 1;
+            BigInteger term = scale / (odd * odd * central);
+            if (term.IsZero) break;
+            sum += term;
+            k++;
+            // C(2k,k) = C(2k-2,k-1) * (2k)(2k-1) / k^2 (exact integer division).
+            central = central * (2 * k) * (2 * k - 1) / ((BigInteger)k * k);
+        }
+        return ScaleDown(sum, 16);
+    }
+
     // arctan(1/xInv) * scale, via the alternating power series.
     private static BigInteger ArctanInverse(BigInteger xInv, BigInteger scale)
     {
@@ -632,6 +662,7 @@ internal abstract class BigIrrational
         public const string PiName = "π"; // greek small letter pi
         public const string EName = "e";
         public const string OmegaName = "Ω"; // greek capital letter omega (the omega constant)
+        public const string CatalanSeriesName = "catalan_series"; // internal leaf, never parsed
 
         public string Name { get; }
         public SymbolNode(string name) => Name = name;
@@ -641,6 +672,7 @@ internal abstract class BigIrrational
             PiName => PiClosure,
             EName => EClosure,
             OmegaName => OmegaClosure,
+            CatalanSeriesName => CatalanSeriesClosure,
             _ => throw new InvalidOperationException($"Unknown symbolic constant '{Name}'."),
         };
 

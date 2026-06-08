@@ -49,6 +49,7 @@ internal abstract class Expr
         public const string I = "i";
         public const string Omega = "omega";
         public const string Phi = "phi";
+        public const string Catalan = "catalan";
 
         public string Name { get; }
         public Constant(string name) => Name = name;
@@ -67,6 +68,7 @@ internal abstract class Expr
             E => BigIrrational.E,
             Omega => BigIrrational.Omega,
             Phi => GoldenRatio,
+            Catalan => BigIrrational.Catalan,
             I => throw new NotSupportedException("The imaginary unit 'i' is not real."),
             _ => throw new NotSupportedException($"Unknown constant '{Name}'."),
         };
@@ -78,6 +80,7 @@ internal abstract class Expr
             E => BigComplex.FromReal(BigIrrational.E),
             Omega => BigComplex.FromReal(BigIrrational.Omega),
             Phi => BigComplex.FromReal(GoldenRatio),
+            Catalan => BigComplex.FromReal(BigIrrational.Catalan),
             I => BigComplex.ImaginaryUnit,
             _ => throw new NotSupportedException($"Unknown constant '{Name}'."),
         };

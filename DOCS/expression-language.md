@@ -109,6 +109,7 @@ deliberately constructed to hug an integer. Roots of rationals that happen to be
 | `e` | Euler's number |
 | `phi` / `φ` | the golden ratio `(1 + sqrt(5)) / 2` (exact, stays symbolic) |
 | `omega` / `Ω` | the omega constant `W(1)`, root of `x·e^x = 1` (~0.567) |
+| `catalan` | Catalan's constant `G` (~0.91597), `(π/8)·ln(2+√3) + (3/8)·Σ 1/((2k+1)²·C(2k,k))` |
 | `i` | the imaginary unit (only meaningful at the complex level) |
 | `true` / `false` | `1` / `0` |
 

@@ -8,6 +8,9 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Catalan's constant** `catalan` (`G ≈ 0.91597`), via the geometrically-convergent
+  series `G = (π/8)·ln(2+√3) + (3/8)·Σ 1/((2k+1)²·C(2k,k))` — arbitrary precision,
+  validated to 50 digits.
 - **Implicit multiplication** by juxtaposition: a factor next to one that begins with a
   letter or `(` multiplies — `2pi`, `2(x+1)`, `2sqrt(2)`, `(a)(b)`, `3pi^2`. It never
   triggers on a bare number or a leading `-`, so `2 2` is a syntax error and `2 - 3`
