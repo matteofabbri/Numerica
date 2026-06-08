@@ -1,7 +1,7 @@
-using SuperNumbers;
+using Numerica;
 using Xunit;
 
-namespace SuperNumbers.Tests;
+namespace Numerica.Tests;
 
 public class TranscendentalTests
 {

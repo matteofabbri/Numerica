@@ -1,7 +1,7 @@
-using SuperNumbers;
+using Numerica;
 using Xunit;
 
-namespace SuperNumbers.Tests;
+namespace Numerica.Tests;
 
 // Literal forms accepted by the Numeric constructor / parser.
 public class NumericLiteralTests

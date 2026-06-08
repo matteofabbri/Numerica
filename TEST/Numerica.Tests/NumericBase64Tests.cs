@@ -1,7 +1,7 @@
-using SuperNumbers;
+using Numerica;
 using Xunit;
 
-namespace SuperNumbers.Tests;
+namespace Numerica.Tests;
 
 // base64(<VALUE>) decodes the bytes (standard or URL-safe, with/without padding,
 // with/without quotes) and reads them big-endian as an unsigned integer -- exactly

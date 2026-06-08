@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Sprache;
 
-namespace SuperNumbers.Parsing;
+namespace Numerica.Parsing;
 
 /// <summary>
 /// Maps strings to <see cref="Expr"/> trees using the Sprache parser-combinator

@@ -1,7 +1,7 @@
-using SuperNumbers;
+using Numerica;
 using System.Numerics;
 
-namespace SuperNumbers.Parsing;
+namespace Numerica.Parsing;
 
 /// <summary>
 /// An algebraic number: a root of an integer polynomial, the decidable middle

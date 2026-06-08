@@ -11,6 +11,6 @@
 ## Checklist
 
 - [ ] Code, comments and strings are in English
-- [ ] Tests added/updated and `dotnet test SuperNumbers.slnx -c Release` is green
+- [ ] Tests added/updated and `dotnet test Numerica.slnx -c Release` is green
 - [ ] No new public types leaked (capability added behind `Numeric` where possible)
 - [ ] Docs / CHANGELOG updated if user-facing

@@ -1,7 +1,7 @@
-using SuperNumbers;
+using Numerica;
 using Xunit;
 
-namespace SuperNumbers.Tests;
+namespace Numerica.Tests;
 
 // `Numeric` decides == and < EXACTLY for algebraic formulas (the capability that used
 // to live in the deleted BigAlgebric type), and falls back to a numeric comparison only

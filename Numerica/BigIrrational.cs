@@ -1,8 +1,8 @@
-using SuperNumbers.Parsing;
+using Numerica.Parsing;
 using System.Numerics;
 using System.Text;
 
-namespace SuperNumbers;
+namespace Numerica;
 
 /// <summary>
 /// An irrational (more precisely: a closed-form real) represented as an exact

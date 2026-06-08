@@ -1,0 +1,33 @@
+name: Publish to NuGet
+
+# Publishes the package when a GitHub Release is published (recommended), or manually.
+# Requires a repository secret named NUGET_API_KEY with push rights on nuget.org.
+# Keep the <Version> in Numerica/Numerica.csproj in sync with the release tag.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Pack
+        run: dotnet pack Numerica.slnx -c Release -o ${{ github.workspace }}/artifacts
+
+      - name: Push to NuGet
+        run: >
+          dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg"
+          --api-key "${{ secrets.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate

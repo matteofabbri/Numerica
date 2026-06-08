@@ -1,4 +1,4 @@
-# SuperNumbers — design notes & references
+# Numerica — design notes & references
 
 This document records *why* the library is shaped the way it is, and points to the
 literature behind each decision. The story follows the original question: **C# has

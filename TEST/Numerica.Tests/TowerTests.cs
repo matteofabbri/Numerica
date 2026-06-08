@@ -1,8 +1,8 @@
-using SuperNumbers;
-using SuperNumbers.Parsing;
+using Numerica;
+using Numerica.Parsing;
 using Xunit;
 
-namespace SuperNumbers.Tests;
+namespace Numerica.Tests;
 
 // The symbolic identities the library is built to honour, fixed as regressions.
 public class TowerTests

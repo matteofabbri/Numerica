@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Numerics;
-using SuperNumbers.Parsing;
+using Numerica.Parsing;
 
-namespace SuperNumbers;
+namespace Numerica;
 
 /// <summary>
 /// The front-door numeric type: a number described by an EXPRESSION rather than a

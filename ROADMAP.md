@@ -1,6 +1,6 @@
 # Roadmap
 
-This is a wish list, not a promise. It captures where SuperNumbers could go and
+This is a wish list, not a promise. It captures where Numerica could go and
 roughly in what order. Issues and PRs that move any of these forward are welcome —
 see [CONTRIBUTING.md](CONTRIBUTING.md).
 

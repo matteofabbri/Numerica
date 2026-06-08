@@ -1,7 +1,7 @@
-using SuperNumbers;
+using Numerica;
 using Xunit;
 
-namespace SuperNumbers.Tests;
+namespace Numerica.Tests;
 
 // The uniform typed-literal forms: bool(...), char(...), int(...), float(...),
 // each accepted with or without double quotes (only " is used).

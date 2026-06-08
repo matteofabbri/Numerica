@@ -1,9 +1,9 @@
 using System.Numerics;
 using System.Text;
-using SuperNumbers;
+using Numerica;
 using Xunit;
 
-namespace SuperNumbers.Tests;
+namespace Numerica.Tests;
 
 // string(<STRING>) -> UTF-8 bytes -> big-endian unsigned BigInteger.
 public class NumericStringTests

@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Numerics;
 
-namespace SuperNumbers;
+namespace Numerica;
 
 /// <summary>
 /// Exact rational number, stored as <c>Numerator / Denominator</c> in lowest terms

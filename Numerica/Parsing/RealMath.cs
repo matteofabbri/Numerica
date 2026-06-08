@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SuperNumbers.Parsing;
+namespace Numerica.Parsing;
 
 /// <summary>
 /// Fixed-point transcendental functions in arbitrary binary precision.

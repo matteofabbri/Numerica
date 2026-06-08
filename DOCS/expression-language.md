@@ -1,4 +1,4 @@
-# The SuperNumbers expression language
+# The Numerica expression language
 
 Everything starts from a string: `new Numeric("...")` parses a formula into an
 expression tree and evaluates it lazily. This page is the reference for what you can

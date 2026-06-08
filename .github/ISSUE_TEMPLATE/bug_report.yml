@@ -34,7 +34,7 @@ body:
     id: version
     attributes:
       label: Version / environment
-      description: SuperNumbers version, .NET SDK version, OS.
+      description: Numerica version, .NET SDK version, OS.
       placeholder: 0.1.0, .NET 10.0.300, Windows 11
     validations:
       required: false

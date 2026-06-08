@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SuperNumbers\SuperNumbers.csproj" />
+    <ProjectReference Include="..\..\Numerica\Numerica.csproj" />
   </ItemGroup>
 
 </Project>

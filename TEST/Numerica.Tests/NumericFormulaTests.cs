@@ -1,8 +1,8 @@
 using System.Numerics;
-using SuperNumbers;
+using Numerica;
 using Xunit;
 
-namespace SuperNumbers.Tests;
+namespace Numerica.Tests;
 
 // Formulas built straight from strings via `new Numeric("...")` -- the type stays a
 // suspended calculation and only becomes a value when one of the As* methods is called.

@@ -1,7 +1,7 @@
-using SuperNumbers;
+using Numerica;
 using Xunit;
 
-namespace SuperNumbers.Tests;
+namespace Numerica.Tests;
 
 // The public IsRational / IsIrrational / IsComplex properties.
 public class NumericClassificationTests

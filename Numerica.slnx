@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/DOCS/">
+    <File Path="DOCS/DOCS.md" />
+  </Folder>
+  <Folder Name="/SAMPLES/">
+    <Project Path="SAMPLES/Numerica.BasicSample/Numerica.BasicSample.csproj" Id="34495a89-c183-4560-b7e9-1ebf28008d61" />
+  </Folder>
+  <Folder Name="/TEST/">
+    <Project Path="TEST/Numerica.Tests/Numerica.Tests.csproj" />
+  </Folder>
+  <Project Path="Numerica/Numerica.csproj" />
+</Solution>

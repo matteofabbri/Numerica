@@ -1,6 +1,6 @@
-# SuperNumbers
+# Numerica
 
-[![CI](https://github.com/OWNER/SuperNumbers/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/SuperNumbers/actions/workflows/ci.yml)
+[![CI](https://github.com/OWNER/Numerica/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/Numerica/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4.svg)](https://dotnet.microsoft.com)
 
@@ -110,12 +110,12 @@ Requires the .NET 10 SDK or later.
 
 ```bash
 dotnet test                                         # the regression suite (xUnit)
-dotnet run --project SAMPLES/SuperNumbers.BasicSample
+dotnet run --project SAMPLES/Numerica.BasicSample
 ```
 
 ## Layout
 
-- `SuperNumbers/`
+- `Numerica/`
   - `Numeric.cs` — the front-door type (formula string, lazy, `INumber<Numeric>`)
   - `BigRational.cs` — exact rationals (the floor of the tower)
   - `BigIrrational.cs` — the symbolic tree + the numeric engine
@@ -126,8 +126,8 @@ dotnet run --project SAMPLES/SuperNumbers.BasicSample
     - `AlgebraicReal.cs` — internal algebraic-number engine (decidable `==`/`<`)
     - `Polynomial.cs` — rational-coefficient polynomials + Sturm machinery
     - `RealMath.cs` — fixed-point exp / ln / sin / cos / atan
-- `SAMPLES/SuperNumbers.BasicSample/` — a short `Numeric` demo
-- `TEST/SuperNumbers.Tests/` — the xUnit regression suite
+- `SAMPLES/Numerica.BasicSample/` — a short `Numeric` demo
+- `TEST/Numerica.Tests/` — the xUnit regression suite
 - `DOCS/DOCS.md` — design notes and references to the relevant papers
 
 ## Documentation

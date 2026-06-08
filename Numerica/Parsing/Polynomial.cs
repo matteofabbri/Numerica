@@ -1,12 +1,12 @@
 using System.Numerics;
 
-namespace SuperNumbers.Parsing;
+namespace Numerica.Parsing;
 
 /// <summary>
 /// Dense univariate polynomial with <see cref="BigRational"/> coefficients,
 /// stored low degree first. Used by <see cref="AlgebraicReal"/> for the
 /// minimal-polynomial / Sturm machinery that makes comparison of algebraic
-/// numbers decidable (which in turn backs <see cref="SuperNumbers.Numeric"/>'s
+/// numbers decidable (which in turn backs <see cref="Numerica.Numeric"/>'s
 /// exact == / &lt; on algebraic expressions).
 /// </summary>
 internal sealed class Polynomial

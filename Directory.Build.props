@@ -17,14 +17,14 @@
 
   <!-- Common package / repository metadata. -->
   <PropertyGroup>
-    <Authors>SuperNumbers contributors</Authors>
-    <Company>SuperNumbers</Company>
-    <Product>SuperNumbers</Product>
-    <Copyright>Copyright (c) 2026 SuperNumbers contributors</Copyright>
+    <Authors>Numerica contributors</Authors>
+    <Company>Numerica</Company>
+    <Product>Numerica</Product>
+    <Copyright>Copyright (c) 2026 Numerica contributors</Copyright>
     <RepositoryType>git</RepositoryType>
     <!-- TODO: replace OWNER with the GitHub account/organization. -->
-    <RepositoryUrl>https://github.com/OWNER/SuperNumbers</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/OWNER/SuperNumbers</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/OWNER/Numerica</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/OWNER/Numerica</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">

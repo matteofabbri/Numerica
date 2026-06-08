@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SuperNumbers;
+namespace Numerica;
 
 /// <summary>
 /// Complex number whose real and imaginary parts are each an exact

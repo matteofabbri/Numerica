@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-SuperNumbers is pre-1.0. Security fixes are applied to the latest `master` and the
+Numerica is pre-1.0. Security fixes are applied to the latest `master` and the
 most recent release.
 
 | Version | Supported |

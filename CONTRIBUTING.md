@@ -1,4 +1,4 @@
-# Contributing to SuperNumbers
+# Contributing to Numerica
 
 Thanks for your interest! Contributions of all sizes are welcome — bug reports,
 docs, tests, and code.
@@ -8,25 +8,25 @@ docs, tests, and code.
 You need the **.NET 10 SDK** (or newer). The repo pins it via `global.json`.
 
 ```bash
-git clone https://github.com/OWNER/SuperNumbers.git
-cd SuperNumbers
-dotnet build SuperNumbers.slnx -c Release
-dotnet test  SuperNumbers.slnx -c Release
+git clone https://github.com/OWNER/Numerica.git
+cd Numerica
+dotnet build Numerica.slnx -c Release
+dotnet test  Numerica.slnx -c Release
 ```
 
 Run the sample:
 
 ```bash
-dotnet run --project SAMPLES/SuperNumbers.BasicSample
+dotnet run --project SAMPLES/Numerica.BasicSample
 ```
 
 ## Project shape
 
-- `SuperNumbers/` — the library. `Numeric` is the **only public type**; everything
+- `Numerica/` — the library. `Numeric` is the **only public type**; everything
   else (`BigRational`, `BigIrrational`, `BigComplex`, `Expr`, `Polynomial`,
   `AlgebraicReal`, `RealMath`) is `internal` and exposed to the tests via
   `InternalsVisibleTo`.
-- `TEST/SuperNumbers.Tests/` — xUnit regression tests.
+- `TEST/Numerica.Tests/` — xUnit regression tests.
 - `SAMPLES/` — runnable examples.
 - `DOCS/` — design notes and references.
 

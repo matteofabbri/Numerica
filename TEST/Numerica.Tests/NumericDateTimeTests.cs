@@ -1,8 +1,8 @@
 using System;
-using SuperNumbers;
+using Numerica;
 using Xunit;
 
-namespace SuperNumbers.Tests;
+namespace Numerica.Tests;
 
 // datetime(<VALUE>) parses any .NET / ISO-8601 date representation into its UTC tick count.
 public class NumericDateTimeTests
