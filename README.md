@@ -3,15 +3,21 @@
 A small C# project about **exact numbers**, built as a tower:
 
 ```
-BigInteger -> BigRational -> BigAlgebraic -> BigIrrational -> BigComplex
- (exact)      (exact ==)    (decidable ==)   (symbolic tree)   (complex)
+BigInteger -> BigRational -> BigIrrational -> BigComplex
+ (exact)      (exact ==)     (symbolic tree)   (complex)
+
+         Numeric  (front door: build from a formula string, evaluate lazily,
+                   INumber<T>; == and < exact & decidable for algebraic formulas)
 ```
 
 It starts from a real question — *C# has `BigInteger`, why not a `BigFloat`?* — and
 follows the answer all the way to closed-form reals. The full reasoning and the
 relevant papers are in [DOCS.md](DOCS.md).
 
-## The types
+## Under the hood
+
+`Numeric` (below) is the **only public type** — everything in this section is
+`internal`, the machinery it drives.
 
 1. **`BigRational`** — exact `num/den` in lowest terms. Closed under `+ - * /` and
    integer powers, so `==` is *genuinely exact*: `1/3 + 1/6` is exactly `1/2`.
@@ -30,12 +36,42 @@ relevant papers are in [DOCS.md](DOCS.md).
    (`Exp`, `Ln`, `Sin`, `Cos`, `Sqrt`, powers) are available — including Euler's
    `exp(i*pi) + 1 = 0`.
 
-4. **`BigAlgebraic`** — the **decidable middle ground**: a root of an integer
-   polynomial, stored as a squarefree annihilating `Polynomial` + an isolating
-   rational interval. Here `==` and `<` are **exact and decidable** (`sqrt(2)*sqrt(2)
-   == 2` is *decided* true; `sqrt(2) < sqrt(3)` is decided). Arithmetic builds the
-   minimal polynomial of the result via the regular representation. The price:
-   `pi` and `e` (transcendental) do not live here.
+There is also a **decidable middle ground** — algebraic numbers (roots of integer
+polynomials), represented as a squarefree annihilating polynomial + an isolating
+rational interval, where `==` and `<` are exact and decidable. That engine is
+internal (`Parsing/AlgebraicReal`); you reach it through `Numeric` (below), whose
+comparisons it makes exact for algebraic formulas. `pi` and `e` (transcendental) do
+not live there.
+
+## `Numeric` — the front door
+
+`Numeric` is the type you reach for first. You build it from a **formula string**;
+it stays a suspended calculation (it holds the expression tree) and only **becomes a
+value when asked**. It implements .NET's generic-math `INumber<Numeric>`, so it drops
+into standard operators and algorithms, and converts to whichever level fits:
+
+```csharp
+var n = new Numeric("sqrt(2) * sqrt(2)");
+n.ToDecimalString(30);   // "2.000000000000000000000000000000"
+n.IsRational;            // true  (decided exactly: the value is 2)
+n.IsIrrational;          // false
+n.IsComplex;             // false
+
+new Numeric("2 + 3*i").IsComplex;                  // true
+new Numeric("(1 + sqrt(5)) / 2").IsIrrational;     // true
+new Numeric("sqrt(2)") < new Numeric("sqrt(3)");   // true
+Numeric total = Numeric.One + new Numeric("1/2");  // composes via INumber<T>
+```
+
+`IsRational` / `IsIrrational` / `IsComplex` are the public way to ask what kind of
+number you have. (The concrete `BigRational` / `BigIrrational` / `BigComplex` values
+stay internal.)
+
+`==` and `<` are **exact and decidable** when both formulas are algebraic
+(rationals, `+ - * /`, integer powers, roots of rationals): the comparison drops to
+an internal minimal-polynomial + isolating-interval engine, so `sqrt(2)*sqrt(2) == 2`
+is *decided* true. For transcendental formulas (`pi`, `e`, `exp`, `ln`, trig), where
+exact equality is undecidable, it falls back to a high-precision numeric comparison.
 
 ## One tree, three levels, parsed from strings
 
@@ -54,31 +90,36 @@ Expr.Parse("exp(i*pi) + 1").ToComplex();      // ~ 0
 **Exact** `==` on closed-form reals is undecidable (Richardson's theorem): if two
 values were equal, a bit-by-bit comparison would never terminate. So:
 
-- `BigRational` and `BigAlgebraic` have exact, **decidable** equality.
+- `BigRational` has exact, **decidable** equality, and `Numeric` extends that to all
+  **algebraic** formulas (via the internal `AlgebraicReal` engine).
 - `BigIrrational`'s simplifier reaches exact answers *when the structure cancels*;
   otherwise it compares only up to a chosen precision
   (`CompareApprox` / `ApproximatelyEquals`).
 
 ## Running
 
-Requires the .NET 8 SDK or later.
+Requires the .NET 10 SDK or later.
 
 ```bash
-dotnet run                 # the demo
-dotnet test                # the regression suite (xUnit)
+dotnet test                                         # the regression suite (xUnit)
+dotnet run --project SAMPLES/SuperNumbers.BasicSample
 ```
 
-## Files
+## Layout
 
-- `BigRational.cs` — exact rationals (the floor of the tower)
-- `BigAlgebraic.cs` — algebraic numbers with decidable `==`/`<`
-- `Polynomial.cs` — rational-coefficient polynomials + Sturm machinery
-- `BigIrrational.cs` — the symbolic tree + the numeric engine
-- `RealMath.cs` — fixed-point exp / ln / sin / cos / atan
-- `BigComplex.cs` — complex numbers over `BigIrrational`
-- `Expr.cs` — the universal expression tree (three evaluators)
-- `ExpressionParser.cs` — the Sprache grammar (string -> tree)
-- `Program.cs` — demo of all of the above
-- `DOCS.md` — design notes and references to the relevant papers
+- `SuperNumbers/`
+  - `Numeric.cs` — the front-door type (formula string, lazy, `INumber<Numeric>`)
+  - `BigRational.cs` — exact rationals (the floor of the tower)
+  - `BigIrrational.cs` — the symbolic tree + the numeric engine
+  - `BigComplex.cs` — complex numbers over `BigIrrational`
+  - `Parsing/`
+    - `Expr.cs` — the universal expression tree (three evaluators)
+    - `ExpressionParser.cs` — the Sprache grammar (string -> tree)
+    - `AlgebraicReal.cs` — internal algebraic-number engine (decidable `==`/`<`)
+    - `Polynomial.cs` — rational-coefficient polynomials + Sturm machinery
+    - `RealMath.cs` — fixed-point exp / ln / sin / cos / atan
+- `SAMPLES/SuperNumbers.BasicSample/` — a short `Numeric` demo
+- `TEST/SuperNumbers.Tests/` — the xUnit regression suite
+- `DOCS/DOCS.md` — design notes and references to the relevant papers
 - `tests/SuperNumbers.Tests` — xUnit regression tests
 ```

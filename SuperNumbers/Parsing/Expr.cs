@@ -14,7 +14,7 @@ namespace SuperNumbers.Parsing;
 /// Sprache parser-combinator library), closing the loop string -> expression ->
 /// value at whichever level you ask for.
 /// </summary>
-public abstract class Expr
+internal abstract class Expr
 {
     /// <summary>Evaluate as an exact rational. Throws if the tree is not rational.</summary>
     public abstract BigRational ToRational();
@@ -46,6 +46,7 @@ public abstract class Expr
         public const string Pi = "pi";
         public const string E = "e";
         public const string I = "i";
+        public const string Omega = "omega";
 
         public string Name { get; }
         public Constant(string name) => Name = name;
@@ -57,6 +58,7 @@ public abstract class Expr
         {
             Pi => BigIrrational.Pi,
             E => BigIrrational.E,
+            Omega => BigIrrational.Omega,
             I => throw new NotSupportedException("The imaginary unit 'i' is not real."),
             _ => throw new NotSupportedException($"Unknown constant '{Name}'."),
         };
@@ -65,6 +67,7 @@ public abstract class Expr
         {
             Pi => BigComplex.FromReal(BigIrrational.Pi),
             E => BigComplex.FromReal(BigIrrational.E),
+            Omega => BigComplex.FromReal(BigIrrational.Omega),
             I => BigComplex.ImaginaryUnit,
             _ => throw new NotSupportedException($"Unknown constant '{Name}'."),
         };
@@ -171,7 +174,9 @@ public abstract class Expr
         }
 
         public override BigRational ToRational()
-            => throw new NotSupportedException($"'{Name}' does not evaluate to a rational.");
+            => Name == "abs"
+                ? Argument.ToRational().Abs
+                : throw new NotSupportedException($"'{Name}' does not evaluate to a rational.");
 
         public override BigIrrational ToIrrational()
         {
@@ -185,6 +190,7 @@ public abstract class Expr
                 "cos" => BigIrrational.Cos(a),
                 "tan" => BigIrrational.Tan(a),
                 "atan" => BigIrrational.Atan(a),
+                "abs" => a.SignApprox() < 0 ? -a : a,
                 _ => throw new NotSupportedException($"Unknown function '{Name}'."),
             };
         }
@@ -200,6 +206,7 @@ public abstract class Expr
                 "sin" => BigComplex.Sin(a),
                 "cos" => BigComplex.Cos(a),
                 "tan" => BigComplex.Sin(a) / BigComplex.Cos(a),
+                "abs" => BigComplex.FromReal(a.Magnitude()),
                 _ => throw new NotSupportedException($"Function '{Name}' is not supported on complex numbers."),
             };
         }

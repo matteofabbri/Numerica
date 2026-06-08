@@ -12,7 +12,7 @@ namespace SuperNumbers;
 /// so two values are equal iff their reduced fractions match. This is the bottom
 /// floor of the tower (rationals -> algebraic irrationals -> complex).
 /// </summary>
-public readonly struct BigRational : IEquatable<BigRational>, IComparable<BigRational>
+internal readonly struct BigRational : IEquatable<BigRational>, IComparable<BigRational>
 {
     public BigInteger Numerator { get; }
     public BigInteger Denominator { get; }

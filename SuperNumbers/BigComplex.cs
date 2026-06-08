@@ -10,7 +10,7 @@ namespace SuperNumbers;
 /// themselves carry roots and constants, so identities stay exact: |3 + 4i| folds to
 /// 5, i^2 folds to -1, and arithmetic never loses precision before you ask for digits.
 /// </summary>
-public sealed class BigComplex
+internal sealed class BigComplex
 {
     public BigIrrational Real { get; }
     public BigIrrational Imaginary { get; }

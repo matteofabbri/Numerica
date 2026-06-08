@@ -123,13 +123,50 @@ internal static class RealMath
         return RoundShr(pi, 8);
     }
 
+    /// <summary>The omega constant W(1): the root of x*e^x = 1 (~0.5671), via Newton's method.</summary>
+    public static BigInteger Omega(int p)
+    {
+        BigInteger scale = BigInteger.One << p;
+        BigInteger x = scale / 2; // start near the root (Omega ~ 0.567)
+        for (int i = 0; i < 200; i++)
+        {
+            BigInteger ex = Exp(x, p);                   // e^x
+            BigInteger f = MulFx(x, ex, scale) - scale;  // x*e^x - 1
+            BigInteger df = MulFx(ex, x + scale, scale); // e^x*(x + 1)
+            BigInteger delta = DivFx(f, df, scale);
+            x -= delta;
+            if (BigInteger.Abs(delta) <= 1) break;
+        }
+        return x;
+    }
+
     // ---------- internal pieces ----------
 
-    // atan(v) for |v| <= 1 via the power series v - v^3/3 + v^5/5 - ...
+    // atan(v) for |v| <= 1. The bare power series stalls near |v| = 1 (its terms stop
+    // shrinking -- at v = 1 the numerator v^(2k+1) stays 1 forever), so first reduce the
+    // argument with atan(x) = 2*atan(x/(1+sqrt(1+x^2))) until it is small, where the
+    // series converges quickly and terminates.
     private static BigInteger AtanSmall(BigInteger value, BigInteger scale)
     {
+        BigInteger threshold = scale / 4; // reduce until |x| < 1/4
+        int doublings = 0;
+        while (BigInteger.Abs(value) > threshold)
+        {
+            BigInteger x2 = MulFx(value, value, scale);
+            BigInteger root = SqrtFx(scale + x2, scale);    // sqrt(1 + x^2)
+            value = DivFx(value, scale + root, scale);       // x / (1 + sqrt(1 + x^2))
+            doublings++;
+        }
+
+        BigInteger series = AtanSeries(value, scale);
+        return series << doublings; // undo the halvings: atan(x) = 2^doublings * atan(reduced)
+    }
+
+    // The alternating power series v - v^3/3 + v^5/5 - ..., for |v| comfortably below 1.
+    private static BigInteger AtanSeries(BigInteger value, BigInteger scale)
+    {
         BigInteger x2 = MulFx(value, value, scale);
-        BigInteger power = value;       // v^(2k+1)
+        BigInteger power = value;
         BigInteger sum = BigInteger.Zero;
         int k = 0;
         while (!power.IsZero)
@@ -192,6 +229,25 @@ internal static class RealMath
     // ---------- fixed-point helpers ----------
 
     private static BigInteger MulFx(BigInteger a, BigInteger b, BigInteger scale) => DivRound(a * b, scale);
+
+    // a / b at the given scale: (a/b) * scale.
+    private static BigInteger DivFx(BigInteger a, BigInteger b, BigInteger scale) => DivRound(a * scale, b);
+
+    // sqrt(v) at the given scale: sqrt(v/scale) * scale = isqrt(v * scale).
+    private static BigInteger SqrtFx(BigInteger v, BigInteger scale) => IntegerSqrt(v * scale);
+
+    private static BigInteger IntegerSqrt(BigInteger n)
+    {
+        if (n.Sign <= 0) return BigInteger.Zero;
+        BigInteger x = BigInteger.One << (((int)n.GetBitLength() + 1) / 2);
+        while (true)
+        {
+            BigInteger y = (x + n / x) >> 1;
+            if (y >= x) break;
+            x = y;
+        }
+        return x;
+    }
 
     private static BigInteger DivRound(BigInteger a, BigInteger b)
     {

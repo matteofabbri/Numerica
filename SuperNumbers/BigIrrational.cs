@@ -32,7 +32,7 @@ namespace SuperNumbers;
 /// answers when the structure cancels; otherwise we can only compare up to a
 /// chosen precision. See DOCS.md for references.
 /// </summary>
-public abstract class BigIrrational
+internal abstract class BigIrrational
 {
     public static readonly BigIrrational Zero = new RationalNode(BigRational.Zero);
     public static readonly BigIrrational One = new RationalNode(BigRational.One);
@@ -42,6 +42,9 @@ public abstract class BigIrrational
 
     /// <summary>Euler's number e (symbolic leaf, evaluated via its Taylor series).</summary>
     public static readonly BigIrrational E = new SymbolNode(SymbolNode.EName);
+
+    /// <summary>The omega constant W(1), root of x*e^x = 1 (symbolic leaf, evaluated via Newton).</summary>
+    public static readonly BigIrrational Omega = new SymbolNode(SymbolNode.OmegaName);
 
     // ---------- Construction ----------
 
@@ -537,6 +540,8 @@ public abstract class BigIrrational
         return ScaleDown(pi, 16);
     }
 
+    private static BigInteger OmegaClosure(int bits) => ScaleDown(RealMath.Omega(bits + 16), 16);
+
     private static BigInteger EClosure(int bits)
     {
         // e = sum 1/k!
@@ -626,6 +631,7 @@ public abstract class BigIrrational
     {
         public const string PiName = "π"; // greek small letter pi
         public const string EName = "e";
+        public const string OmegaName = "Ω"; // greek capital letter omega (the omega constant)
 
         public string Name { get; }
         public SymbolNode(string name) => Name = name;
@@ -634,6 +640,7 @@ public abstract class BigIrrational
         {
             PiName => PiClosure,
             EName => EClosure,
+            OmegaName => OmegaClosure,
             _ => throw new InvalidOperationException($"Unknown symbolic constant '{Name}'."),
         };
 

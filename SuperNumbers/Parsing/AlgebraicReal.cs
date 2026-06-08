@@ -1,7 +1,7 @@
-using SuperNumbers.Parsing;
+using SuperNumbers;
 using System.Numerics;
 
-namespace SuperNumbers;
+namespace SuperNumbers.Parsing;
 
 /// <summary>
 /// An algebraic number: a root of an integer polynomial, the decidable middle
@@ -19,7 +19,7 @@ namespace SuperNumbers;
 /// polynomials live here -- sqrt(2), the golden ratio, cube roots -- while pi and e
 /// (transcendental) do not. See DOCS.md (Cohen, Loos).
 /// </summary>
-public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlgebraic>
+internal sealed class AlgebraicReal : IComparable<AlgebraicReal>, IEquatable<AlgebraicReal>
 {
     public Polynomial Poly { get; }
     public BigRational Low { get; private set; }
@@ -29,7 +29,7 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
     private readonly bool _isRational;
     private readonly BigRational _rationalValue;
 
-    private BigAlgebraic(Polynomial poly, BigRational low, BigRational high, BigIrrational hint)
+    private AlgebraicReal(Polynomial poly, BigRational low, BigRational high, BigIrrational hint)
     {
         Poly = poly;
         Low = low;
@@ -39,7 +39,7 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
         _rationalValue = BigRational.Zero;
     }
 
-    private BigAlgebraic(BigRational value)
+    private AlgebraicReal(BigRational value)
     {
         Poly = Polynomial.Linear(value);
         Low = value;
@@ -51,14 +51,14 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
 
     // ---------- Construction ----------
 
-    public static BigAlgebraic FromRational(BigRational value) => new(value);
-    public static BigAlgebraic FromInteger(BigInteger value) => new(new BigRational(value));
+    public static AlgebraicReal FromRational(BigRational value) => new(value);
+    public static AlgebraicReal FromInteger(BigInteger value) => new(new BigRational(value));
 
     /// <summary>The principal (non-negative) square root of a non-negative rational.</summary>
-    public static BigAlgebraic Sqrt(BigRational value) => Root(value, 2);
+    public static AlgebraicReal Sqrt(BigRational value) => Root(value, 2);
 
     /// <summary>The real n-th root of a rational (principal positive root for the cases used here).</summary>
-    public static BigAlgebraic Root(BigRational value, int n)
+    public static AlgebraicReal Root(BigRational value, int n)
     {
         if (n <= 0) throw new ArgumentOutOfRangeException(nameof(n));
         if (value.IsZero) return FromRational(BigRational.Zero);
@@ -68,23 +68,23 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
 
     // ---------- Arithmetic ----------
 
-    public static BigAlgebraic operator +(BigAlgebraic a, BigAlgebraic b)
+    public static AlgebraicReal operator +(AlgebraicReal a, AlgebraicReal b)
     {
         if (a._isRational && b._isRational) return FromRational(a._rationalValue + b._rationalValue);
         return FromPolyAndHint(AnnihilatingPoly(a, b, product: false), a.Hint + b.Hint);
     }
 
-    public static BigAlgebraic operator -(BigAlgebraic a, BigAlgebraic b) => a + (-b);
+    public static AlgebraicReal operator -(AlgebraicReal a, AlgebraicReal b) => a + (-b);
 
-    public static BigAlgebraic operator *(BigAlgebraic a, BigAlgebraic b)
+    public static AlgebraicReal operator *(AlgebraicReal a, AlgebraicReal b)
     {
         if (a._isRational && b._isRational) return FromRational(a._rationalValue * b._rationalValue);
         return FromPolyAndHint(AnnihilatingPoly(a, b, product: true), a.Hint * b.Hint);
     }
 
-    public static BigAlgebraic operator /(BigAlgebraic a, BigAlgebraic b) => a * b.Reciprocal();
+    public static AlgebraicReal operator /(AlgebraicReal a, AlgebraicReal b) => a * b.Reciprocal();
 
-    public static BigAlgebraic operator -(BigAlgebraic a)
+    public static AlgebraicReal operator -(AlgebraicReal a)
     {
         if (a._isRational) return FromRational(-a._rationalValue);
         // P(-x): flip the sign of every odd-degree coefficient.
@@ -94,7 +94,7 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
         return FromPolyAndHint(new Polynomial(coeffs), -a.Hint);
     }
 
-    public BigAlgebraic Reciprocal()
+    public AlgebraicReal Reciprocal()
     {
         if (_isRational) return FromRational(_rationalValue.Reciprocal());
         // 1/x is a root of the reversed polynomial.
@@ -117,7 +117,7 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
         }
     }
 
-    public int CompareTo(BigAlgebraic? other)
+    public int CompareTo(AlgebraicReal? other)
     {
         ArgumentNullException.ThrowIfNull(other);
         if (Equals(other)) return 0;
@@ -130,7 +130,7 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
         }
     }
 
-    public bool Equals(BigAlgebraic? other)
+    public bool Equals(AlgebraicReal? other)
     {
         if (other is null) return false;
         if (_isRational && other._isRational) return _rationalValue == other._rationalValue;
@@ -146,16 +146,16 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
         return g.SquareFree().CountRootsBetween(lo, hi) >= 1;
     }
 
-    public override bool Equals(object? obj) => obj is BigAlgebraic a && Equals(a);
+    public override bool Equals(object? obj) => obj is AlgebraicReal a && Equals(a);
 
     public override int GetHashCode() => 0; // equal values may have different representations; constant is safe
 
-    public static bool operator ==(BigAlgebraic a, BigAlgebraic b) => a.Equals(b);
-    public static bool operator !=(BigAlgebraic a, BigAlgebraic b) => !a.Equals(b);
-    public static bool operator <(BigAlgebraic a, BigAlgebraic b) => a.CompareTo(b) < 0;
-    public static bool operator >(BigAlgebraic a, BigAlgebraic b) => a.CompareTo(b) > 0;
-    public static bool operator <=(BigAlgebraic a, BigAlgebraic b) => a.CompareTo(b) <= 0;
-    public static bool operator >=(BigAlgebraic a, BigAlgebraic b) => a.CompareTo(b) >= 0;
+    public static bool operator ==(AlgebraicReal a, AlgebraicReal b) => a.Equals(b);
+    public static bool operator !=(AlgebraicReal a, AlgebraicReal b) => !a.Equals(b);
+    public static bool operator <(AlgebraicReal a, AlgebraicReal b) => a.CompareTo(b) < 0;
+    public static bool operator >(AlgebraicReal a, AlgebraicReal b) => a.CompareTo(b) > 0;
+    public static bool operator <=(AlgebraicReal a, AlgebraicReal b) => a.CompareTo(b) <= 0;
+    public static bool operator >=(AlgebraicReal a, AlgebraicReal b) => a.CompareTo(b) >= 0;
 
     // ---------- Output ----------
 
@@ -183,7 +183,7 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
 
     // ---------- Root isolation and selection ----------
 
-    private static BigAlgebraic FromPolyAndHint(Polynomial poly, BigIrrational hint)
+    private static AlgebraicReal FromPolyAndHint(Polynomial poly, BigIrrational hint)
     {
         Polynomial sf = poly.SquareFree();
         List<Candidate> roots = IsolateRoots(sf);
@@ -192,7 +192,7 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
 
         Candidate chosen = SelectByHint(roots, hint);
         if (chosen.IsRational) return FromRational(chosen.Point);
-        return new BigAlgebraic(sf, chosen.Low, chosen.High, hint);
+        return new AlgebraicReal(sf, chosen.Low, chosen.High, hint);
     }
 
     private readonly struct Candidate
@@ -344,7 +344,7 @@ public sealed class BigAlgebraic : IComparable<BigAlgebraic>, IEquatable<BigAlge
     // We iterate the powers 1, gamma, gamma^2, ... and stop at the first linear dependence:
     // that yields the (monic) MINIMAL polynomial of gamma directly -- far smaller and cheaper
     // than a full characteristic polynomial (e.g. degree 2 for (sqrt2+sqrt3)^2 instead of 16).
-    private static Polynomial AnnihilatingPoly(BigAlgebraic a, BigAlgebraic b, bool product)
+    private static Polynomial AnnihilatingPoly(AlgebraicReal a, AlgebraicReal b, bool product)
     {
         BigRational[] monicA = Monic(a.Poly);
         BigRational[] monicB = Monic(b.Poly);

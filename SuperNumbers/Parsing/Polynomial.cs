@@ -4,11 +4,12 @@ namespace SuperNumbers.Parsing;
 
 /// <summary>
 /// Dense univariate polynomial with <see cref="BigRational"/> coefficients,
-/// stored low degree first. Used by <see cref="BigAlgebraic"/> for the
+/// stored low degree first. Used by <see cref="AlgebraicReal"/> for the
 /// minimal-polynomial / Sturm machinery that makes comparison of algebraic
-/// numbers decidable.
+/// numbers decidable (which in turn backs <see cref="SuperNumbers.Numeric"/>'s
+/// exact == / &lt; on algebraic expressions).
 /// </summary>
-public sealed class Polynomial
+internal sealed class Polynomial
 {
     private readonly BigRational[] _coeffs; // index i = coefficient of x^i, trimmed
 

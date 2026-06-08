@@ -40,16 +40,19 @@ literature behind each decision. The story follows the original question: **C# h
 6. **The escape hatch is algebraic numbers.** Restricting to roots of integer
    polynomials (minimal polynomial + isolating interval) makes `==` and `<` decidable
    again — you regain `sqrt(2)`, `sqrt(3)`, the golden ratio, but lose `pi` and `e`
-   (they are transcendental). A future `BigAlgebraic` would live here.
+   (they are transcendental). This is the decidable middle ground: an internal
+   `AlgebraicReal` engine, surfaced through `Numeric`'s exact `==` / `<`.
 
 ## Where each idea lives in the code
 
 | Concept | File | Notes |
 |---|---|---|
 | Exact rationals, decidable `==` | `BigRational.cs` | reduced via GCD, positive denominator |
+| Algebraic numbers, decidable `==`/`<` | `Parsing/AlgebraicReal.cs` | annihilating polynomial + isolating interval; Sturm; backs `Numeric` |
 | Symbolic tree + simplification | `BigIrrational.cs` | smart constructors; `sqrt(2)*sqrt(2) -> 2` |
 | On-demand numeric evaluation | `BigIrrational.cs` | `Approximate(bits)`, precision-driven closures |
 | Complex over closed-form reals | `BigComplex.cs` | `i^2 = -1`, `|3+4i| = 5` exactly |
+| Lazy formula-backed facade | `Numeric.cs` | `new Numeric("...")`, evaluated on demand, `INumber<T>` |
 
 ## References
 
