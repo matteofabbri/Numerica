@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SuperNumbers;
+namespace SuperNumbers.Parsing;
 
 /// <summary>
 /// Dense univariate polynomial with <see cref="BigRational"/> coefficients,

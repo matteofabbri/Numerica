@@ -1,7 +1,7 @@
 using System.Numerics;
 using Sprache;
 
-namespace SuperNumbers;
+namespace SuperNumbers.Parsing;
 
 /// <summary>
 /// Maps strings to <see cref="Expr"/> trees using the Sprache parser-combinator

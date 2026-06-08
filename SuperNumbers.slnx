@@ -1,6 +1,10 @@
 <Solution>
-  <Folder Name="/tests/">
-    <Project Path="tests/SuperNumbers.Tests/SuperNumbers.Tests.csproj" />
+  <Folder Name="/DOCS/">
+    <File Path="DOCS/DOCS.md" />
   </Folder>
-  <Project Path="SuperNumbers.csproj" />
+  <Folder Name="/SAMPLES/">
+    <Project Path="SAMPLES/SuperNumbers.BasicSample/SuperNumbers.BasicSample.csproj" Id="34495a89-c183-4560-b7e9-1ebf28008d61" />
+  </Folder>
+  <Folder Name="/TEST/" />
+  <Project Path="SuperNumbers/SuperNumbers.csproj" />
 </Solution>

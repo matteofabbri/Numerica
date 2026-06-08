@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace SuperNumbers;
+namespace SuperNumbers.Parsing;
 
 /// <summary>
 /// A universal expression tree, decoupled from any single numeric domain.
