@@ -125,9 +125,14 @@ content has escapes or characters like `)`.
 | `char(...)` | `char(A)`, `char("A")`, `char("Ω")`, `char("😀")` | the Unicode **code point** (`65`, `937`, `128512`) |
 | `int(...)` | `int(34567)`, `int("-5")` | an integer of any size |
 | `float(...)` | `float(2134,23)`, `float("2134.23")`, `float(1.5e3)` | exact `BigRational`; the decimal separator is culture-invariant (`.` and `,` both work) |
+| `rational(...)` | `rational(3/7)`, `rational(-10/4)` | an exact fraction `a` or `a/b`, reduced to lowest terms |
+| `complex(...)` | `complex(3+4i)`, `complex(4i)`, `complex(-i)`, `complex(2.5+0.5i)` | a complex number `a + bi` (decimals allowed; evaluates only at the complex level) |
+| `hex(...)` / `bin(...)` / `oct(...)` | `hex(FF)`, `hex(0xFF)`, `bin(0b1111_1111)`, `oct(0o755)` | an integer in base 16 / 2 / 8 (optional `0x`/`0b`/`0o` prefix, `_` separators, leading sign) |
 | `string(...)` | `string("ciao")`, `string(hello)` | UTF-8 bytes read big-endian as an unsigned integer |
 | `base64(...)` | `base64("SGVsbG8=")`, `base64(__4)` | decoded bytes, same encoding as `string` (standard **and** URL-safe alphabets) |
+| `timespan(...)` | `timespan(1:00:00)`, `timespan(1.00:00:00)` | tick count (100 ns), the duration counterpart of `datetime` |
 | `datetime(...)` | `datetime(2024-01-15T10:30:00Z)`, `datetime(2024-01-15)` | UTC tick count (any .NET / ISO-8601 format) |
+| `guid(...)` | `guid(00000000-0000-0000-0000-0000000000ff)` | the 128 bits as the unsigned integer spelled by the canonical text |
 
 ### char vs string
 

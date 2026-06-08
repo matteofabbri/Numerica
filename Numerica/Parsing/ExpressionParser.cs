@@ -35,9 +35,12 @@ namespace Numerica.Parsing;
 /// without double quotes (only " is used, never '): bool(true)/bool("false") -> 1/0;
 /// char(A)/char("A") -> the Unicode code point; int(34567) -> an integer of any size;
 /// float(2134,23)/float("2134.23") -> an exact BigRational (the decimal separator is
-/// culture-invariant: '.' and ',' both work); string("ciao") -> UTF-8 bytes read
-/// big-endian as an unsigned integer; base64("SGVsbG8=") -> decoded bytes the same way
-/// (standard or URL-safe alphabet); datetime(2024-01-15T10:30:00Z) -> UTC ticks.
+/// culture-invariant: '.' and ',' both work); rational("3/7") -> an exact fraction;
+/// complex(3+4i) -> a complex number built from existing nodes; hex(FF)/bin(1010)/oct(17)
+/// -> integers in base 16/2/8 (optional 0x/0b/0o prefix, '_' separators); string("ciao")
+/// -> UTF-8 bytes read big-endian as an unsigned integer; base64("SGVsbG8=") -> decoded
+/// bytes the same way (standard or URL-safe alphabet); timespan(1:00:00) -> tick count;
+/// datetime(2024-01-15T10:30:00Z) -> UTC ticks; guid(...) -> the 128 bits as an integer.
 /// </summary>
 internal static class ExpressionParser
 {
@@ -127,9 +130,16 @@ internal static class ExpressionParser
         .Or(TypedLiteral("char", MakeChar))
         .Or(TypedLiteral("int", MakeInt))
         .Or(TypedLiteral("float", MakeFloat))
+        .Or(TypedLiteral("rational", MakeRational))
+        .Or(TypedLiteral("complex", MakeComplex))
+        .Or(TypedLiteral("hex", MakeHex))
+        .Or(TypedLiteral("bin", MakeBin))
+        .Or(TypedLiteral("oct", MakeOct))
         .Or(TypedLiteral("string", MakeString))
         .Or(TypedLiteral("base64", MakeBase64))
-        .Or(TypedLiteral("datetime", MakeDateTime));
+        .Or(TypedLiteral("timespan", MakeTimeSpan))
+        .Or(TypedLiteral("datetime", MakeDateTime))
+        .Or(TypedLiteral("guid", MakeGuid));
 
     private static readonly Parser<Expr> Atom =
         Number.Or(TypedLiterals).Or(IdentifierExpr).Or(Group);
@@ -271,6 +281,111 @@ internal static class ExpressionParser
             ? new BigRational(mantissa * BigInteger.Pow(10, tenPower))
             : new BigRational(mantissa, BigInteger.Pow(10, -tenPower));
         return new Expr.Number(value);
+    }
+
+    // rational -> an exact fraction "a", "a/b" or "-a/b" (whitespace allowed around '/').
+    private static Expr MakeRational(string content)
+        => new Expr.Number(BigRational.Parse(content));
+
+    // hex / bin / oct -> an integer in base 16 / 2 / 8. A leading sign, an optional base
+    // prefix (0x / 0b / 0o) and '_' digit separators are all accepted.
+    private static Expr MakeHex(string content) => IntegerInBase(content, 16, "0x");
+    private static Expr MakeBin(string content) => IntegerInBase(content, 2, "0b");
+    private static Expr MakeOct(string content) => IntegerInBase(content, 8, "0o");
+
+    private static Expr IntegerInBase(string content, int radix, string prefix)
+    {
+        string text = content.Trim().Replace("_", string.Empty);
+        bool negative = false;
+        if (text.StartsWith('-')) { negative = true; text = text[1..]; }
+        else if (text.StartsWith('+')) text = text[1..];
+        if (text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) text = text[prefix.Length..];
+        if (text.Length == 0) throw new FormatException($"Empty base-{radix} integer literal.");
+
+        BigInteger value = BigInteger.Zero;
+        foreach (char c in text)
+        {
+            int digit = DigitValue(c);
+            if (digit < 0 || digit >= radix)
+                throw new FormatException($"'{c}' is not a base-{radix} digit.");
+            value = value * radix + digit;
+        }
+        return new Expr.Number(new BigRational(negative ? -value : value));
+    }
+
+    private static int DigitValue(char c)
+        => c is >= '0' and <= '9' ? c - '0'
+         : c is >= 'a' and <= 'z' ? c - 'a' + 10
+         : c is >= 'A' and <= 'Z' ? c - 'A' + 10
+         : -1;
+
+    // timespan -> its tick count (100 ns), the duration counterpart of datetime.
+    private static Expr MakeTimeSpan(string content)
+    {
+        if (TimeSpan.TryParse(content.Trim(), CultureInfo.InvariantCulture, out TimeSpan value))
+            return new Expr.Number(new BigRational(value.Ticks));
+        throw new FormatException($"'{content}' is not a valid TimeSpan.");
+    }
+
+    // guid -> its 128 bits read as the unsigned integer spelled by the canonical text
+    // (big-endian: the same order a human reads the hex digits).
+    private static Expr MakeGuid(string content)
+    {
+        if (!Guid.TryParse(content.Trim(), out Guid value))
+            throw new FormatException($"'{content}' is not a valid Guid.");
+        BigInteger number = BigInteger.Parse(
+            "0" + value.ToString("N"), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+        return new Expr.Number(new BigRational(number));
+    }
+
+    // ----- complex literal sub-grammar (used only by complex(...)) -----
+
+    // A non-negative decimal -> exact BigRational ("3", "2.5").
+    private static readonly Parser<BigRational> UnsignedDecimal =
+        from whole in Parse.Digit.AtLeastOnce().Text()
+        from fraction in
+            (from dot in Parse.Char('.')
+             from digits in Parse.Digit.AtLeastOnce().Text()
+             select digits).Optional()
+        select DecimalToRational(whole, fraction.GetOrDefault());
+
+    // One signed component: a number (with optional trailing 'i') or a bare 'i'.
+    private static readonly Parser<Expr> ComplexComponent =
+        from sign in Parse.Chars("+-").Token().Optional()
+        from body in
+            (from magnitude in UnsignedDecimal.Token()
+             from imaginary in Parse.Char('i').Optional()
+             select ComponentExpr(magnitude, imaginary.IsDefined))
+            .Or(from i in Parse.Char('i').Token() select ComponentExpr(BigRational.One, imaginary: true))
+        select sign.IsDefined && sign.Get() == '-' ? new Expr.Negate(body) : body;
+
+    // A sum of components: "a", "bi", "a+bi", "a-bi", bare "i"/"-i", decimals, whitespace.
+    private static readonly Parser<Expr> ComplexLiteral =
+        from first in ComplexComponent
+        from rest in ComplexComponent.Many()
+        select rest.Aggregate(first, (acc, term) => (Expr)new Expr.Binary('+', acc, term));
+
+    private static Expr ComponentExpr(BigRational magnitude, bool imaginary)
+        => imaginary
+            ? new Expr.Binary('*', new Expr.Number(magnitude), new Expr.Constant(Expr.Constant.I))
+            : new Expr.Number(magnitude);
+
+    private static BigRational DecimalToRational(string whole, string? fraction)
+    {
+        string frac = fraction ?? string.Empty;
+        BigInteger mantissa = BigInteger.Parse(whole + frac, CultureInfo.InvariantCulture);
+        return frac.Length == 0
+            ? new BigRational(mantissa)
+            : new BigRational(mantissa, BigInteger.Pow(10, frac.Length));
+    }
+
+    // complex -> a + bi built from existing nodes, so it evaluates at the complex level.
+    private static Expr MakeComplex(string content)
+    {
+        var result = ComplexLiteral.End().TryParse(content.Trim());
+        if (!result.WasSuccessful)
+            throw new FormatException($"'{content}' is not a valid complex literal.");
+        return result.Value;
     }
 
     // string -> UTF-8 bytes -> big-endian unsigned BigInteger.

@@ -19,9 +19,9 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Wider algebraic closure**: today `BigAlgebric`/`AlgebraicReal` builds roots of
   *rationals* and does exact arithmetic on them. Extend to roots of arbitrary
   algebraic numbers (e.g. `sqrt(1 + sqrt(2))`) so nested radicals are decided too.
-- **More typed literals**: `long`/`short`/`byte`/`decimal`/`double` aliases (with
-  optional range checks), `rational("3/7")`, `complex("3+4i")`, `hex/bin/oct(...)`,
-  `timespan(...)`, `guid(...)`, `ipaddress(...)`.
+- **More typed literals**: ✅ `rational("3/7")`, `complex("3+4i")`, `hex/bin/oct(...)`,
+  `timespan(...)` and `guid(...)` landed. Still open: `long`/`short`/`byte`/`decimal`/
+  `double` aliases (with optional range checks) and `ipaddress(...)`.
 - **Variables & bindings** in the formula language: `let x = sqrt(2) in x*x`, plus
   user-supplied parameters for reusable expressions.
 - **Performance**: memoize evaluated constants, use binary-splitting for the series

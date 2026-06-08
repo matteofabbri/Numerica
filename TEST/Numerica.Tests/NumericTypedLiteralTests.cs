@@ -63,4 +63,66 @@ public class NumericTypedLiteralTests
     {
         Assert.True(new Numeric(formula) == new Numeric(expectedRational));
     }
+
+    [Theory]
+    [InlineData("rational(3/7)", "3/7")]
+    [InlineData("rational(\"3/7\")", "3/7")]
+    [InlineData("rational(-10/4)", "-5/2")]   // reduced to lowest terms
+    [InlineData("rational(5)", "5")]
+    public void Rational(string formula, string expected)
+    {
+        Assert.True(new Numeric(formula) == new Numeric(expected));
+        Assert.True(new Numeric(formula).IsRational);
+    }
+
+    [Theory]
+    [InlineData("hex(FF)", "255")]
+    [InlineData("hex(0xFF)", "255")]            // optional 0x prefix
+    [InlineData("hex(-1A)", "-26")]
+    [InlineData("bin(1010)", "10")]
+    [InlineData("bin(0b1111_1111)", "255")]     // 0b prefix and '_' separators
+    [InlineData("oct(17)", "15")]
+    [InlineData("oct(0o755)", "493")]
+    public void BaseIntegers(string formula, string expected)
+    {
+        Assert.True(new Numeric(formula) == new Numeric(expected));
+    }
+
+    [Fact]
+    public void TimeSpanIsTicks()
+    {
+        // 1 hour = 3600 s = 36_000_000_000 ticks of 100 ns
+        Assert.True(new Numeric("timespan(1:00:00)") == new Numeric("36000000000"));
+        // 1.00:00:00 is one day, matching datetime subtraction over a day
+        Assert.True(new Numeric("timespan(1.00:00:00)") == new Numeric("864000000000"));
+    }
+
+    [Fact]
+    public void GuidIsItsBigEndianInteger()
+    {
+        // The canonical text read as a single 128-bit hex integer.
+        Assert.True(new Numeric("guid(00000000-0000-0000-0000-000000000001)") == new Numeric("1"));
+        Assert.True(new Numeric("guid(\"00000000-0000-0000-0000-0000000000ff\")") == new Numeric("255"));
+    }
+
+    [Theory]
+    [InlineData("complex(3+4i)", "3 + 4*i")]
+    [InlineData("complex(\"3-4i\")", "3 - 4*i")]
+    [InlineData("complex(4i)", "4*i")]
+    [InlineData("complex(i)", "i")]
+    [InlineData("complex(-i)", "-i")]
+    [InlineData("complex(2.5+0.5i)", "2.5 + 0.5*i")]
+    [InlineData("complex(7)", "7")]            // a bare real is still fine
+    public void Complex(string formula, string equivalent)
+    {
+        Assert.True(new Numeric(formula) == new Numeric(equivalent));
+    }
+
+    [Fact]
+    public void ComplexMagnitudeIsExact()
+    {
+        // |3 + 4i| folds to exactly 5.
+        Assert.Equal("5", new Numeric("abs(complex(3+4i))").AsComplex().Real.ToString());
+        Assert.True(new Numeric("complex(3+4i)").IsComplex);
+    }
 }

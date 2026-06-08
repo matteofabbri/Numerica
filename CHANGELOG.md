@@ -8,6 +8,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **More typed literals**: `rational(3/7)` (exact fraction), `complex(3+4i)` (a complex
+  number built from existing nodes, decimals allowed), `hex(FF)`/`bin(0b1010)`/`oct(17)`
+  (integers in base 16/2/8, optional prefix and `_` separators), `timespan(1:00:00)`
+  (tick count) and `guid(...)` (the 128 bits as a big-endian integer).
 - **Public value accessors** `TryGetRational(out BigInteger num, out BigInteger den)`
   and `TryGetInteger(out BigInteger value)` — exact, reduced, BCL-typed (no internal
   number type leaks). Stronger than `IsRational`: they also recognise a rational hidden
