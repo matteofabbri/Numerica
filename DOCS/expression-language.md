@@ -162,6 +162,10 @@ z.IsRational;           // true
   the original formula): a reduced `numerator/denominator` when the value is rational
   (`2/6` → `"1/3"`, `sqrt(2)*sqrt(2)` → `"2"`), else the formula. Reload with
   `new Numeric(text)`. Handy for persisting a value as a stable, canonical key.
+- `TryGetRational(out BigInteger num, out BigInteger den)` — the exact reduced fraction
+  when the value is rational (denominator positive); also catches rationals hidden in an
+  algebraic form, e.g. `sqrt(2)*sqrt(2)` → `2/1`. Returns BCL `BigInteger`s only.
+- `TryGetInteger(out BigInteger value)` — the exact value when it is a whole number.
 - `IsRational` / `IsIrrational` / `IsComplex` — classification.
 - `== < > <= >=` — exact and decidable for algebraic formulas, high-precision numeric
   otherwise.

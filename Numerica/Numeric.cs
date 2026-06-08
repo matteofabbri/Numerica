@@ -58,15 +58,56 @@ public sealed class Numeric : INumber<Numeric>
     /// the only exact finite form. Reconstruct either with <c>new Numeric(text)</c>.
     /// </summary>
     public string ToValueString()
-        => TryRationalValue(out BigRational r) ? r.ToString() : Formula;
+        => TryExactRational(out BigRational r) ? r.ToString() : Formula;
 
-    // True (with the reduced value) when the evaluated number is a plain real rational.
-    private bool TryRationalValue(out BigRational value)
+    /// <summary>
+    /// The exact value as a reduced <paramref name="numerator"/>/<paramref name="denominator"/>
+    /// (denominator positive) when this number is a real rational; <see langword="false"/>
+    /// otherwise. Strictly stronger than <see cref="IsRational"/>: it also recognises
+    /// algebraic forms that collapse to a rational, e.g. <c>sqrt(2)*sqrt(2) → 2/1</c>.
+    /// Returns BCL types only — no internal numeric type leaks.
+    /// </summary>
+    public bool TryGetRational(out BigInteger numerator, out BigInteger denominator)
+    {
+        if (TryExactRational(out BigRational r))
+        {
+            numerator = r.Numerator;
+            denominator = r.Denominator;
+            return true;
+        }
+        numerator = BigInteger.Zero;
+        denominator = BigInteger.One;
+        return false;
+    }
+
+    /// <summary>The exact integer value when this number is a whole number; otherwise false.</summary>
+    public bool TryGetInteger(out BigInteger value)
+    {
+        if (TryExactRational(out BigRational r) && r.IsInteger)
+        {
+            value = r.Numerator;
+            return true;
+        }
+        value = BigInteger.Zero;
+        return false;
+    }
+
+    // The exact rational value, if any. Two independent detectors: the symbolic simplifier
+    // (catches collapses like sqrt(2)*sqrt(2) → 2) and the algebraic engine (decides
+    // rationality of algebraic combinations); together at least as strong as IsRational.
+    private bool TryExactRational(out BigRational value)
     {
         BigComplex v = Value;
         if (v.Imaginary.TryGetRational(out BigRational im) && im.IsZero
             && v.Real.TryGetRational(out value))
             return true;
+
+        if (!IsComplex && TryAsAlgebraic(_expr, out AlgebraicReal a) && a.IsRational)
+        {
+            value = a.RationalValue;
+            return true;
+        }
+
         value = BigRational.Zero;
         return false;
     }

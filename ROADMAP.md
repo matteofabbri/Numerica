@@ -29,9 +29,10 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Medium term (1.0)
 
-- **API polish**: round out `INumber<Numeric>` interop, add culture/format options to
-  `ToString`, span-based fast paths, and public value accessors that don't leak the
-  internal types (e.g. `TryGetRational(out BigInteger num, out BigInteger den)`).
+- **API polish**: ✅ public value accessors that don't leak the internal types
+  (`TryGetRational(out BigInteger num, out BigInteger den)`, `TryGetInteger`). Still
+  open: round out `INumber<Numeric>` interop, culture/format options to `ToString`, and
+  span-based fast paths.
 - **Packaging**: ship to NuGet with SourceLink, deterministic builds and symbol
   packages; publish XML docs.
 - **Benchmarks**: a BenchmarkDotNet suite tracking the cost of parsing, evaluation

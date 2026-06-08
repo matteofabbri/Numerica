@@ -8,6 +8,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Public value accessors** `TryGetRational(out BigInteger num, out BigInteger den)`
+  and `TryGetInteger(out BigInteger value)` — exact, reduced, BCL-typed (no internal
+  number type leaks). Stronger than `IsRational`: they also recognise a rational hidden
+  in an algebraic form, e.g. `sqrt(2)*sqrt(2)` → `2/1`.
 - **Rounding family** `floor`, `ceil`, `round` (halves away from zero), `trunc` and
   `sign`. Exact on rationals; on an irrational argument the integer is decided from a
   2⁻²⁵⁶ approximation, so `floor(pi)` is `3` — exact for any non-adversarial value (a
