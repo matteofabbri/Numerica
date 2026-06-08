@@ -115,6 +115,7 @@ internal abstract class Expr
             '-' => Left.ToRational() - Right.ToRational(),
             '*' => Left.ToRational() * Right.ToRational(),
             '/' => Left.ToRational() / Right.ToRational(),
+            '%' => BigRational.Mod(Left.ToRational(), Right.ToRational()),
             '^' => RationalPower(),
             _ => throw new NotSupportedException($"Operator '{Operator}'."),
         };
@@ -125,6 +126,8 @@ internal abstract class Expr
             '-' => Left.ToIrrational() - Right.ToIrrational(),
             '*' => Left.ToIrrational() * Right.ToIrrational(),
             '/' => Left.ToIrrational() / Right.ToIrrational(),
+            // Modulo is only meaningful for rationals; evaluate exactly there.
+            '%' => BigIrrational.FromRational(BigRational.Mod(Left.ToRational(), Right.ToRational())),
             '^' => IrrationalPower(),
             _ => throw new NotSupportedException($"Operator '{Operator}'."),
         };
@@ -135,6 +138,7 @@ internal abstract class Expr
             '-' => Left.ToComplex() - Right.ToComplex(),
             '*' => Left.ToComplex() * Right.ToComplex(),
             '/' => Left.ToComplex() / Right.ToComplex(),
+            '%' => throw new NotSupportedException("Modulo is not defined on complex numbers."),
             '^' => ComplexPower(),
             _ => throw new NotSupportedException($"Operator '{Operator}'."),
         };
@@ -187,9 +191,18 @@ internal abstract class Expr
         public Expr Argument => Arguments[0];
 
         public override BigRational ToRational()
-            => Name == "abs" && Arguments.Count == 1
-                ? Arguments[0].ToRational().Abs
-                : throw new NotSupportedException($"'{Name}' does not evaluate to a rational.");
+        {
+            switch (Name)
+            {
+                case "abs" when Arguments.Count == 1: return Arguments[0].ToRational().Abs;
+                case "min": return MinMaxRational(wantMax: false);
+                case "max": return MinMaxRational(wantMax: true);
+                case "gcd": return GcdOfArgs();
+                case "lcm": return LcmOfArgs();
+                case "mod": return ModOfArgs();
+                default: throw new NotSupportedException($"'{Name}' does not evaluate to a rational.");
+            }
+        }
 
         public override BigIrrational ToIrrational()
         {
@@ -225,6 +238,11 @@ internal abstract class Expr
                 case "asinh": return BigIrrational.Ln(a + BigIrrational.Sqrt(a * a + 1));
                 case "acosh": return BigIrrational.Ln(a + BigIrrational.Sqrt(a * a - 1));
                 case "atanh": return BigIrrational.Ln((1 + a) / (1 - a)) / 2;
+                case "min": return MinMaxIrrational(wantMax: false);
+                case "max": return MinMaxIrrational(wantMax: true);
+                case "gcd": return BigIrrational.FromRational(GcdOfArgs());
+                case "lcm": return BigIrrational.FromRational(LcmOfArgs());
+                case "mod": return BigIrrational.FromRational(ModOfArgs());
                 case "abs": return a.SignApprox() < 0 ? -a : a;
                 default: throw new NotSupportedException($"Unknown function '{Name}'.");
             }
@@ -277,6 +295,70 @@ internal abstract class Expr
             if (!n.IsInteger)
                 throw new NotSupportedException("root(x, n) requires an integer degree n.");
             return (int)n.Numerator;
+        }
+
+        // ----- variadic reductions: min / max / gcd / lcm / mod -----
+
+        // min/max over exact rationals (every argument must be rational).
+        private BigRational MinMaxRational(bool wantMax)
+        {
+            BigRational best = Arguments[0].ToRational();
+            for (int i = 1; i < Arguments.Count; i++)
+            {
+                BigRational c = Arguments[i].ToRational();
+                if (wantMax ? c > best : c < best) best = c;
+            }
+            return best;
+        }
+
+        // min/max over closed-form reals: the choice is numeric, but the value returned
+        // is one of the arguments unchanged, so no precision is invented.
+        private BigIrrational MinMaxIrrational(bool wantMax)
+        {
+            BigIrrational best = Arguments[0].ToIrrational();
+            for (int i = 1; i < Arguments.Count; i++)
+            {
+                BigIrrational c = Arguments[i].ToIrrational();
+                int cmp = c.CompareApprox(best);
+                if (wantMax ? cmp > 0 : cmp < 0) best = c;
+            }
+            return best;
+        }
+
+        // The i-th argument as an exact integer (gcd/lcm are integer-only).
+        private BigInteger IntegerArg(int index)
+        {
+            BigRational r = Arguments[index].ToRational();
+            if (!r.IsInteger)
+                throw new NotSupportedException($"'{Name}' requires integer arguments.");
+            return r.Numerator;
+        }
+
+        private BigRational GcdOfArgs()
+        {
+            BigInteger g = IntegerArg(0);
+            for (int i = 1; i < Arguments.Count; i++)
+                g = BigInteger.GreatestCommonDivisor(g, IntegerArg(i));
+            return new BigRational(BigInteger.Abs(g));
+        }
+
+        private BigRational LcmOfArgs()
+        {
+            BigInteger l = IntegerArg(0);
+            for (int i = 1; i < Arguments.Count; i++)
+            {
+                BigInteger n = IntegerArg(i);
+                if (l.IsZero || n.IsZero) { l = BigInteger.Zero; continue; }
+                l = l / BigInteger.GreatestCommonDivisor(l, n) * n;
+            }
+            return new BigRational(BigInteger.Abs(l));
+        }
+
+        private BigRational ModOfArgs()
+        {
+            if (Arguments.Count != 2)
+                throw new NotSupportedException("mod(a, b) takes exactly two arguments.");
+            return BigRational.Mod(Arguments[0].ToRational(), Arguments[1].ToRational());
         }
 
         public override string ToString() => $"{Name}({string.Join(", ", Arguments)})";

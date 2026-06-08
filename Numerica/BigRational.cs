@@ -93,6 +93,18 @@ internal readonly struct BigRational : IEquatable<BigRational>, IComparable<BigR
         return new BigRational(a.Numerator * b.Denominator, a.Denominator * b.Numerator);
     }
 
+    /// <summary>
+    /// Truncated remainder <c>a - b*trunc(a/b)</c>: the result has the sign of <paramref name="a"/>
+    /// (the same convention as the C# <c>%</c> operator on integers).
+    /// </summary>
+    public static BigRational Mod(BigRational a, BigRational b)
+    {
+        if (b.IsZero) throw new DivideByZeroException("Modulo by zero.");
+        BigRational quotient = a / b;
+        BigInteger truncated = quotient.Numerator / quotient.Denominator; // toward zero
+        return a - b * new BigRational(truncated);
+    }
+
     /// <summary>Integer power (negative exponents allowed for non-zero base).</summary>
     public static BigRational Pow(BigRational value, int exponent)
     {

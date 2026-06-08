@@ -11,17 +11,20 @@ namespace Numerica.Parsing;
 /// library. Grammar (lowest to highest precedence):
 ///
 ///   expr   := term  (('+' | '-') term)*
-///   term   := unary (('*' | '/') unary)*
+///   term   := unary (('*' | '/' | '%') unary)*
 ///   unary  := '-' unary | power
 ///   power  := atom ('^' unary)?          (right associative)
 ///   atom   := number | ident '(' expr (',' expr)* ')' | ident | '(' expr ')'
 ///
 /// Number literals: integers and big integers ("123", "234...90"), decimals ("1.5"),
 /// scientific notation ("1.23e5", "-1.23e4", "6.02E23"), and hexadecimal ("0xFF").
+/// The '%' operator is the rational remainder (sign of the dividend), at the same
+/// precedence as '*' and '/'.
 /// Identifiers are function calls when followed by '('. Unary functions: sqrt, cbrt,
 /// exp, ln (alias log), log10, log2, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh,
 /// asinh, acosh, atanh, abs. Two-argument functions: atan2(y, x), root(x, n),
-/// logb(x, base) (and log(x, base)). Otherwise identifiers are constants:
+/// logb(x, base) (and log(x, base)), mod(a, b). Variadic reductions: min, max, gcd, lcm.
+/// Otherwise identifiers are constants:
 /// "true"/"false" -> 1/0, pi (or the symbol π), tau/τ (2·pi), e, i, phi/φ (the golden
 /// ratio), and the omega constant (omega or the symbol Ω). Unicode escapes of the form
 /// \uXXXX in the input are decoded first, so "π" reads as pi.
@@ -147,7 +150,7 @@ internal static class ExpressionParser
 
     private static readonly Parser<Expr> Term =
         Parse.ChainOperator(
-            Parse.Char('*').Or(Parse.Char('/')).Token(),
+            Parse.Char('*').Or(Parse.Char('/')).Or(Parse.Char('%')).Token(),
             Unary,
             (op, left, right) => new Expr.Binary(op, left, right));
 

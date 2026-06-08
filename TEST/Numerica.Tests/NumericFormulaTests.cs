@@ -179,6 +179,49 @@ public class NumericFormulaTests
         Assert.Equal("0", new Numeric("phi^2 - phi - 1").AsIrrational().ToString());
     }
 
+    // ---- modulo and variadic reductions (exact, rational) ----
+
+    [Theory]
+    [InlineData("7 % 3", 1, 1)]
+    [InlineData("-7 % 3", -1, 1)]          // sign follows the dividend
+    [InlineData("7 % -3", 1, 1)]
+    [InlineData("mod(7, 3)", 1, 1)]
+    [InlineData("(1/2) % (1/3)", 1, 6)]    // rational remainder
+    [InlineData("10 % 2", 0, 1)]
+    public void ModuloFormulas(string formula, int num, int den)
+    {
+        Assert.Equal(new BigRational(num, den), new Numeric(formula).AsRational());
+    }
+
+    [Fact]
+    public void ModuloBindsLikeMultiplication()
+    {
+        // 2 + 7 % 3 == 2 + (7 % 3) == 3, not (2 + 7) % 3.
+        Assert.Equal(new BigRational(3), new Numeric("2 + 7 % 3").AsRational());
+    }
+
+    [Theory]
+    [InlineData("min(3, 1, 2)", 1, 1)]
+    [InlineData("max(3, 1, 2)", 3, 1)]
+    [InlineData("min(-1/2, 1/3)", -1, 2)]
+    [InlineData("max(1/4, 1/3, 1/5)", 1, 3)]
+    [InlineData("gcd(24, 36)", 12, 1)]
+    [InlineData("gcd(24, 36, 60)", 12, 1)]
+    [InlineData("lcm(4, 6)", 12, 1)]
+    [InlineData("lcm(2, 3, 4)", 12, 1)]
+    public void ReductionFormulas(string formula, int num, int den)
+    {
+        Assert.Equal(new BigRational(num, den), new Numeric(formula).AsRational());
+    }
+
+    [Fact]
+    public void MinMaxSelectIrrationalArguments()
+    {
+        // The chosen value stays the exact symbolic argument.
+        Assert.Equal("√(2)", new Numeric("max(sqrt(2), 1.4)").AsIrrational().ToString());
+        Assert.Equal("√(2)", new Numeric("min(sqrt(2), sqrt(3))").AsIrrational().ToString());
+    }
+
     // Numeric (decimal-expansion) equality, the honest test for transcendental formulas.
     private static void AssertSameValue(string formula, string expected, int digits = 40)
         => Assert.Equal(

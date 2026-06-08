@@ -16,11 +16,12 @@ n.IsIrrational;          // true
 | --- | --- | --- |
 | `+` `-` | add, subtract | |
 | `*` `/` | multiply, divide | |
+| `%` | remainder | rational, sign of the dividend: `7 % 3 == 1`, `-7 % 3 == -1` |
 | `-x` | unary minus | |
 | `x ^ y` | power | right-associative: `2^3^2 == 2^(3^2) == 512` |
 | `( … )` | grouping | |
 
-Precedence, lowest to highest: `+ -` → `* /` → unary `-` → `^`.
+Precedence, lowest to highest: `+ -` → `* / %` → unary `-` → `^`.
 
 ## Functions
 
@@ -35,6 +36,7 @@ Functions are called with a parenthesised, comma-separated argument list, e.g.
 | inverse trig | `asin(x)`, `acos(x)`, `atan(x)`, `atan2(y, x)` |
 | hyperbolic | `sinh(x)`, `cosh(x)`, `tanh(x)` |
 | inverse hyperbolic | `asinh(x)`, `acosh(x)`, `atanh(x)` |
+| reductions | `min(a, …)`, `max(a, …)`, `gcd(a, …)`, `lcm(a, …)` (integer), `mod(a, b)` |
 | other | `abs(x)` |
 
 ```
@@ -48,6 +50,11 @@ atan2(1, 1)           -> pi/4
 cosh(0)               -> 1
 log10(1000)           -> 3
 logb(8, 2)            -> 3
+min(3, 1, 2)          -> 1
+max(sqrt(2), 1.4)     -> sqrt(2)
+gcd(24, 36)           -> 12
+lcm(4, 6)             -> 12
+mod(7, 3)             -> 1
 abs(-3/4)             -> 3/4
 ```
 

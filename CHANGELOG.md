@@ -8,6 +8,9 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Modulo operator `%`** (rational remainder, sign of the dividend) at the same
+  precedence as `*` and `/`, and the **variadic reductions** `min`, `max`, `gcd`,
+  `lcm` plus the function form `mod(a, b)`.
 - **Multi-argument functions** in the formula language: function calls now take a
   comma-separated argument list, e.g. `atan2(y, x)`, `root(x, n)`, `logb(x, base)`
   and `log(x, base)`.
