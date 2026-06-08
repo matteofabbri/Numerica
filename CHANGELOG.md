@@ -8,6 +8,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Complex-level `asin`/`acos`/`atan`** — the inverse-trig functions now evaluate for
+  complex arguments (principal values via logarithms); `atan2` stays real-only. A real
+  formula whose value leaves the reals (`sqrt(-1)`, `ln(-1)`, `asin(2)`) is now promoted
+  to its complex value (`i`, `i·pi`, `pi/2 - i·ln(2 + sqrt(3))`) instead of throwing.
 - **More typed literals**: `rational(3/7)` (exact fraction), `complex(3+4i)` (a complex
   number built from existing nodes, decimals allowed), `hex(FF)`/`bin(0b1010)`/`oct(17)`
   (integers in base 16/2/8, optional prefix and `_` separators), `timespan(1:00:00)`
@@ -42,8 +46,7 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and `log(x, base)`.
 - New functions: `cbrt`, `root`, `log10`, `log2`, `logb`, `asin`, `acos`, `atan2`,
   `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`. The inverse-hyperbolic and the
-  rest also evaluate on the complex level; the inverse-trig (`asin`/`acos`/`atan2`)
-  are real-only for now.
+  rest also evaluate on the complex level; `atan2` is real-only.
 - New constants: `tau`/`τ` (`2·pi`) and `phi`/`φ` (the golden ratio, kept symbolic so
   identities such as `phi^2 - phi - 1 == 0` stay exact).
 

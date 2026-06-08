@@ -70,9 +70,10 @@ sign(-sqrt(2))        -> -1
 2^3!                  -> 64         (= 2^(3!))
 ```
 
-The inverse-trig functions (`asin`, `acos`, `atan`, `atan2`) are evaluated on the
-**real** level only; the inverse-hyperbolic and the rest are also defined for complex
-arguments.
+`asin`, `acos` and `atan` are defined for complex arguments too; only `atan2` (a planar
+angle) stays **real**-only. A formula that is written with real numbers but whose value
+leaves the reals — `sqrt(-1)`, `ln(-1)`, `asin(2)` — is promoted to its complex value
+(`i`, `i·pi`, `pi/2 - i·ln(2 + sqrt(3))`) instead of failing.
 
 ### Rounding and irrational arguments
 

@@ -115,11 +115,22 @@ public sealed class Numeric : INumber<Numeric>
     private BigComplex Value => _value ??= Evaluate();
 
     // Prefer the real (BigIrrational) interpretation -- it supports the full set of
-    // functions; fall back to the complex one only when the formula uses the unit i.
+    // functions; fall back to the complex one when the formula uses the unit i
+    // (NotSupportedException) or when a real evaluation steps out of the reals -- a square
+    // root or log of a negative, asin/acos outside [-1, 1] (InvalidOperationException).
     private BigComplex Evaluate()
     {
-        try { return BigComplex.FromReal(_expr.ToIrrational()); }
-        catch (NotSupportedException) { return _expr.ToComplex(); }
+        try
+        {
+            BigIrrational real = _expr.ToIrrational();
+            real.SignApprox(); // force a numeric probe so a real-domain failure (even root
+                               // or log of a negative, asin/acos out of range) surfaces here
+            return BigComplex.FromReal(real);
+        }
+        catch (Exception e) when (e is NotSupportedException or InvalidOperationException)
+        {
+            return _expr.ToComplex();
+        }
     }
 
     // ---------- Conversions (internal: the concrete number types live under the hood) ----------

@@ -284,6 +284,20 @@ internal abstract class Expr
                 case "sin": return BigComplex.Sin(a);
                 case "cos": return BigComplex.Cos(a);
                 case "tan": return BigComplex.Sin(a) / BigComplex.Cos(a);
+                // Principal inverse trig via logs: asin(z) = -i·ln(iz + sqrt(1 - z²)),
+                // acos(z) = -i·ln(z + i·sqrt(1 - z²)), atan(z) = (i/2)·(ln(1 - iz) - ln(1 + iz)).
+                case "asin": return ComplexAsin(a);
+                case "acos":
+                {
+                    BigComplex i = BigComplex.ImaginaryUnit;
+                    return -i * BigComplex.Ln(a + i * BigComplex.Sqrt(BigComplex.One - a * a));
+                }
+                case "atan":
+                {
+                    BigComplex i = BigComplex.ImaginaryUnit;
+                    return i / BigComplex.FromInteger(2)
+                        * (BigComplex.Ln(BigComplex.One - i * a) - BigComplex.Ln(BigComplex.One + i * a));
+                }
                 case "sinh": return (BigComplex.Exp(a) - BigComplex.Exp(-a)) / BigComplex.FromInteger(2);
                 case "cosh": return (BigComplex.Exp(a) + BigComplex.Exp(-a)) / BigComplex.FromInteger(2);
                 case "tanh":
@@ -305,6 +319,13 @@ internal abstract class Expr
         // asin(x) = atan2(x, sqrt(1 - x^2)) -- robust at the endpoints x = +/-1.
         private static BigIrrational Asin(BigIrrational x)
             => BigIrrational.Atan2(x, BigIrrational.Sqrt(1 - x * x));
+
+        // asin(z) = -i·ln(iz + sqrt(1 - z²)) -- the complex principal value.
+        private static BigComplex ComplexAsin(BigComplex z)
+        {
+            BigComplex i = BigComplex.ImaginaryUnit;
+            return -i * BigComplex.Ln(i * z + BigComplex.Sqrt(BigComplex.One - z * z));
+        }
 
         // Binary precision used to decide floor/ceil/round/trunc on a non-rational real.
         private const int RoundingBits = 256;
