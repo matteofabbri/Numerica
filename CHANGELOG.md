@@ -8,6 +8,8 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Euler–Mascheroni constant** `egamma` (also `gamma` / `γ`, `γ ≈ 0.57722`), evaluated
+  to arbitrary precision via the Brent–McMillan algorithm — validated to 50 digits.
 - **Catalan's constant** `catalan` (`G ≈ 0.91597`), via the geometrically-convergent
   series `G = (π/8)·ln(2+√3) + (3/8)·Σ 1/((2k+1)²·C(2k,k))` — arbitrary precision,
   validated to 50 digits.

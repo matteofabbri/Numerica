@@ -55,6 +55,12 @@ internal abstract class BigIrrational
         Pi / 8 * Ln(FromInteger(2) + Sqrt(FromInteger(3)))
         + FromRational(new BigRational(3, 8)) * new SymbolNode(SymbolNode.CatalanSeriesName);
 
+    /// <summary>
+    /// The Euler–Mascheroni constant γ (symbolic leaf, evaluated via the Brent–McMillan
+    /// algorithm: γ = A(n)/B(n) − ln(n) with B(n)=Σ(nᵏ/k!)², A(n)=Σ(nᵏ/k!)²·Hₖ).
+    /// </summary>
+    public static readonly BigIrrational EulerMascheroni = new SymbolNode(SymbolNode.EulerMascheroniName);
+
     // ---------- Construction ----------
 
     public static BigIrrational FromRational(BigRational value) => new RationalNode(value);
@@ -588,6 +594,36 @@ internal abstract class BigIrrational
         return ScaleDown(sum, 16);
     }
 
+    // Euler-Mascheroni gamma via Brent-McMillan: with terms t_k = (n^k/k!)^2,
+    //   gamma = (sum t_k H_k) / (sum t_k) - ln(n),   H_k = 1 + 1/2 + ... + 1/k,
+    // whose error is ~ pi*e^{-4n}; pick n ~ bits/4 to drive it below 2^-bits.
+    private static BigInteger EulerMascheroniClosure(int bits)
+    {
+        int p = bits + 96;                         // working precision (generous guard)
+        int n = bits / 4 + 8;                      // e^{-4n} << 2^-bits
+        BigInteger nSquared = (BigInteger)n * n;
+
+        BigInteger scale = BigInteger.One << p;
+        BigInteger term = scale;                   // t_0 * 2^p = 2^p
+        BigInteger harmonic = BigInteger.Zero;     // H_0 * 2^p = 0
+        BigInteger sumB = BigInteger.Zero;         // (sum t_k) * 2^p
+        BigInteger sumA = BigInteger.Zero;         // (sum t_k H_k) * 2^p
+        int k = 0;
+        while (!term.IsZero)                        // t_k grows to a peak at k~n, then decays to 0
+        {
+            sumB += term;
+            sumA += ScaleDown(term * harmonic, p); // t_k*2^p * H_k*2^p / 2^p
+            k++;
+            harmonic += scale / k;                 // H_k = H_{k-1} + 1/k
+            term = term * nSquared / ((BigInteger)k * k); // t_k = t_{k-1} * n^2/k^2
+        }
+
+        // gamma = sumA/sumB - ln(n), all scaled by 2^p.
+        BigInteger ratio = (sumA << p) / sumB;     // (sumA/sumB) * 2^p
+        BigInteger gamma = ratio - RealMath.Ln((BigInteger)n << p, p);
+        return ScaleDown(gamma, p - bits);
+    }
+
     // arctan(1/xInv) * scale, via the alternating power series.
     private static BigInteger ArctanInverse(BigInteger xInv, BigInteger scale)
     {
@@ -662,6 +698,7 @@ internal abstract class BigIrrational
         public const string PiName = "π"; // greek small letter pi
         public const string EName = "e";
         public const string OmegaName = "Ω"; // greek capital letter omega (the omega constant)
+        public const string EulerMascheroniName = "γ"; // greek small letter gamma
         public const string CatalanSeriesName = "catalan_series"; // internal leaf, never parsed
 
         public string Name { get; }
@@ -672,6 +709,7 @@ internal abstract class BigIrrational
             PiName => PiClosure,
             EName => EClosure,
             OmegaName => OmegaClosure,
+            EulerMascheroniName => EulerMascheroniClosure,
             CatalanSeriesName => CatalanSeriesClosure,
             _ => throw new InvalidOperationException($"Unknown symbolic constant '{Name}'."),
         };

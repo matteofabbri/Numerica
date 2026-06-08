@@ -34,8 +34,8 @@ namespace Numerica.Parsing;
 /// A postfix '!' is factorial (exact, non-negative integers): "5!" == "fact(5)" == 120.
 /// Otherwise identifiers are constants:
 /// "true"/"false" -> 1/0, pi (or the symbol π), tau/τ (2·pi), e, i, phi/φ (the golden
-/// ratio), and the omega constant (omega or the symbol Ω). Unicode escapes of the form
-/// \uXXXX in the input are decoded first, so "π" reads as pi.
+/// ratio), omega/Ω, catalan, and the Euler-Mascheroni constant (egamma, gamma or γ).
+/// Unicode escapes of the form \uXXXX in the input are decoded first, so "π" reads as pi.
 ///
 /// Uniform typed-literal forms spell a primitive as keyword(&lt;content&gt;), with or
 /// without double quotes (only " is used, never '): bool(true)/bool("false") -> 1/0;
@@ -227,6 +227,7 @@ internal static class ExpressionParser
             "τ" => new Expr.Constant(Expr.Constant.Tau),
             "φ" or "Φ" => new Expr.Constant(Expr.Constant.Phi),
             "Ω" or "ω" => new Expr.Constant(Expr.Constant.Omega),
+            "γ" => new Expr.Constant(Expr.Constant.EulerGamma),
             _ => new Expr.Constant(name),
         };
     }

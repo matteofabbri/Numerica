@@ -50,6 +50,7 @@ internal abstract class Expr
         public const string Omega = "omega";
         public const string Phi = "phi";
         public const string Catalan = "catalan";
+        public const string EulerGamma = "egamma"; // the Euler-Mascheroni constant γ
 
         public string Name { get; }
         public Constant(string name) => Name = name;
@@ -69,6 +70,7 @@ internal abstract class Expr
             Omega => BigIrrational.Omega,
             Phi => GoldenRatio,
             Catalan => BigIrrational.Catalan,
+            EulerGamma or "gamma" => BigIrrational.EulerMascheroni,
             I => throw new NotSupportedException("The imaginary unit 'i' is not real."),
             _ => throw new NotSupportedException($"Unknown constant '{Name}'."),
         };
@@ -81,6 +83,7 @@ internal abstract class Expr
             Omega => BigComplex.FromReal(BigIrrational.Omega),
             Phi => BigComplex.FromReal(GoldenRatio),
             Catalan => BigComplex.FromReal(BigIrrational.Catalan),
+            EulerGamma or "gamma" => BigComplex.FromReal(BigIrrational.EulerMascheroni),
             I => BigComplex.ImaginaryUnit,
             _ => throw new NotSupportedException($"Unknown constant '{Name}'."),
         };
