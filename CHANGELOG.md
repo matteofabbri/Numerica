@@ -8,6 +8,9 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`pow(x, y)`** function — sugar for `x ^ y`, sharing the same power evaluation across
+  the tower. Real/irrational exponents go through `exp(y·ln x)`; a negative base with a
+  real exponent (e.g. `(-2)^pi`) evaluates on the complex level, and `i^i == exp(-pi/2)`.
 - **Complex-level `asin`/`acos`/`atan`** — the inverse-trig functions now evaluate for
   complex arguments (principal values via logarithms); `atan2` stays real-only. A real
   formula whose value leaves the reals (`sqrt(-1)`, `ln(-1)`, `asin(2)`) is now promoted

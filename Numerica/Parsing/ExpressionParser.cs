@@ -183,7 +183,14 @@ internal static class ExpressionParser
 
     private static Expr MakeIdentifier(string name, IOption<IEnumerable<Expr>> call)
     {
-        if (call.IsDefined) return new Expr.Function(name, call.Get().ToList());
+        if (call.IsDefined)
+        {
+            var args = call.Get().ToList();
+            // pow(a, b) is sugar for a ^ b, reusing the power evaluation across the tower.
+            if (name == "pow" && args.Count == 2)
+                return new Expr.Binary('^', args[0], args[1]);
+            return new Expr.Function(name, args);
+        }
         return name switch
         {
             "true" => new Expr.Number(BigRational.One),

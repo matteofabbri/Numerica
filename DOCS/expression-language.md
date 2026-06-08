@@ -33,7 +33,7 @@ Functions are called with a parenthesised, comma-separated argument list, e.g.
 
 | Group | Functions |
 | --- | --- |
-| roots & powers | `sqrt(x)`, `cbrt(x)`, `root(x, n)` (integer `n`) |
+| roots & powers | `sqrt(x)`, `cbrt(x)`, `root(x, n)` (integer `n`), `pow(x, y)` (sugar for `x ^ y`) |
 | exponential & log | `exp(x)`, `ln(x)` (alias `log(x)`), `log10(x)`, `log2(x)`, `logb(x, base)`, `log(x, base)` |
 | trigonometric | `sin(x)`, `cos(x)`, `tan(x)` |
 | inverse trig | `asin(x)`, `acos(x)`, `atan(x)`, `atan2(y, x)` |

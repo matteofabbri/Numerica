@@ -9,9 +9,9 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
 - **More transcendental coverage**: ✅ `sinh/cosh/tanh`, `asin/acos`, inverse
   hyperbolics (`asinh/acosh/atanh`), `log` with an arbitrary base (`logb`, `log10`,
   `log2`), `cbrt`/`root(x, n)`, `atan2(y, x)`, and the constants `tau` and the golden
-  ratio `phi`, and complex-level `asin/acos/atan` all landed. Still open: `pow` for
-  arbitrary real exponents (partially there via `exp(b·ln a)`), a complex `atan2`, and
-  more named constants (Catalan, Euler–Mascheroni).
+  ratio `phi`, complex-level `asin/acos/atan`, and `pow`/`^` for arbitrary real and
+  complex exponents (incl. `pow(x, y)` sugar) all landed. Still open: a complex `atan2`
+  and more named constants (Catalan, Euler–Mascheroni).
 - **More parser grammar**: ✅ a modulo operator `%`, a postfix factorial `n!`, the
   reductions `min`/`max`/`gcd`/`lcm`/`mod`, and the rounding family
   (`floor`/`ceil`/`round`/`trunc`/`sign`) all landed. Still open: optional implicit
