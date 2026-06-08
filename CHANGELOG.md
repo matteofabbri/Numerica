@@ -62,6 +62,14 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - New constants: `tau`/`τ` (`2·pi`) and `phi`/`φ` (the golden ratio, kept symbolic so
   identities such as `phi^2 - phi - 1 == 0` stay exact).
 
+### Changed
+
+- **Memoised constants** — `pi`, `e`, the omega constant, `catalan` and `egamma` cache
+  their highest-precision evaluation and serve lower-precision requests by shifting, so a
+  constant is computed at most once per precision high-water mark. Lock-free and
+  thread-safe; results are unchanged (validated by the digit tests). A `BenchmarkDotNet`
+  suite under `BENCH/` is the measurement baseline.
+
 ### Fixed
 
 - Identifiers may now contain digits after the first letter, so names like `log2`,

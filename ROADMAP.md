@@ -24,8 +24,9 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
   `double` aliases (with optional range checks) and `ipaddress(...)`.
 - **Variables & bindings** in the formula language: `let x = sqrt(2) in x*x`, plus
   user-supplied parameters for reusable expressions.
-- **Performance**: memoize evaluated constants, use binary-splitting for the series
-  (e, π, exp, ln), and cache compiled closures.
+- **Performance**: ✅ evaluated constants (`pi`, `e`, omega, `catalan`, `egamma`) are
+  memoised with a lock-free precision cache, against the new benchmark baseline. Still
+  open: binary-splitting for the series (e, π, exp, ln) and caching compiled closures.
 
 ## Medium term (1.0)
 

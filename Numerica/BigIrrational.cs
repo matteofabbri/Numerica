@@ -682,6 +682,41 @@ internal abstract class BigIrrational
         return x;
     }
 
+    // ---------- Memoised constants ----------
+
+    // Caches a constant's highest-precision evaluation and serves lower-precision requests
+    // by shifting, so each constant is computed from scratch at most once per precision
+    // high-water mark. Lock-free and thread-safe: the cell is an immutable record held in a
+    // volatile field; a race only causes a redundant (still correct) recompute. The +2-bit
+    // margin keeps a derived value within the closures' 1-ulp contract.
+    private sealed class PrecisionCache
+    {
+        private readonly Func<int, BigInteger> _compute;
+        private volatile Entry? _entry;
+
+        public PrecisionCache(Func<int, BigInteger> compute) => _compute = compute;
+
+        public BigInteger Get(int bits)
+        {
+            Entry? e = _entry;
+            if (e is not null && e.Bits >= bits + 2)
+                return ScaleDown(e.Value, e.Bits - bits);
+
+            int hi = bits + 64;                  // headroom so nearby higher requests still hit
+            BigInteger value = _compute(hi);
+            _entry = new Entry(hi, value);
+            return ScaleDown(value, hi - bits);
+        }
+
+        private sealed record Entry(int Bits, BigInteger Value);
+    }
+
+    private static readonly PrecisionCache PiCache = new(PiClosure);
+    private static readonly PrecisionCache ECache = new(EClosure);
+    private static readonly PrecisionCache OmegaCache = new(OmegaClosure);
+    private static readonly PrecisionCache EulerMascheroniCache = new(EulerMascheroniClosure);
+    private static readonly PrecisionCache CatalanSeriesCache = new(CatalanSeriesClosure);
+
     // ---------- Node types ----------
 
     private sealed class RationalNode : BigIrrational
@@ -706,11 +741,11 @@ internal abstract class BigIrrational
 
         internal override Func<int, BigInteger> Compile() => Name switch
         {
-            PiName => PiClosure,
-            EName => EClosure,
-            OmegaName => OmegaClosure,
-            EulerMascheroniName => EulerMascheroniClosure,
-            CatalanSeriesName => CatalanSeriesClosure,
+            PiName => PiCache.Get,
+            EName => ECache.Get,
+            OmegaName => OmegaCache.Get,
+            EulerMascheroniName => EulerMascheroniCache.Get,
+            CatalanSeriesName => CatalanSeriesCache.Get,
             _ => throw new InvalidOperationException($"Unknown symbolic constant '{Name}'."),
         };
 
