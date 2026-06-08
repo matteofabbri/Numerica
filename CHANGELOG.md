@@ -8,6 +8,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Rounding family** `floor`, `ceil`, `round` (halves away from zero), `trunc` and
+  `sign`. Exact on rationals; on an irrational argument the integer is decided from a
+  2⁻²⁵⁶ approximation, so `floor(pi)` is `3` — exact for any non-adversarial value (a
+  value within that tolerance of an integer is undecidable in general).
 - **Postfix factorial `n!`** — exact, for non-negative integers; sugar for `fact(n)`
   (also spelled `factorial(n)`). Binds tighter than `^` and unary minus, so `2^3!` is
   `2^(3!)` and `-3!` is `-(3!)`. There is no double-factorial: `n!!` means `(n!)!`.
