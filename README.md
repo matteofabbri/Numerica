@@ -1,5 +1,13 @@
 # SuperNumbers
 
+[![CI](https://github.com/OWNER/SuperNumbers/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/SuperNumbers/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4.svg)](https://dotnet.microsoft.com)
+
+**Exact, lazy, expression-backed numbers for .NET** — built from a formula string,
+evaluated only when asked, behind a single public type (`Numeric`) that implements
+`INumber<T>`.
+
 A small C# project about **exact numbers**, built as a tower:
 
 ```
@@ -121,5 +129,19 @@ dotnet run --project SAMPLES/SuperNumbers.BasicSample
 - `SAMPLES/SuperNumbers.BasicSample/` — a short `Numeric` demo
 - `TEST/SuperNumbers.Tests/` — the xUnit regression suite
 - `DOCS/DOCS.md` — design notes and references to the relevant papers
-- `tests/SuperNumbers.Tests` — xUnit regression tests
-```
+
+## Documentation
+
+- [Expression language reference](DOCS/expression-language.md) — every operator,
+  function, constant and literal form you can put in a formula string.
+- [Design notes & references](DOCS/DOCS.md) — the theory and the papers behind it.
+- [Roadmap](ROADMAP.md) — where this could go next.
+
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports and
+ideas go through the GitHub issue templates.
+
+## License
+
+[MIT](LICENSE).

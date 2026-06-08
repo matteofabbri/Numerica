@@ -1,0 +1,34 @@
+<Project>
+
+  <!-- Settings shared by every project in the repository. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Don't require XML docs on every public member. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Only the library opts into packaging (it sets IsPackable=true itself). -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- Common package / repository metadata. -->
+  <PropertyGroup>
+    <Authors>SuperNumbers contributors</Authors>
+    <Company>SuperNumbers</Company>
+    <Product>SuperNumbers</Product>
+    <Copyright>Copyright (c) 2026 SuperNumbers contributors</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <!-- TODO: replace OWNER with the GitHub account/organization. -->
+    <RepositoryUrl>https://github.com/OWNER/SuperNumbers</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/OWNER/SuperNumbers</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+</Project>

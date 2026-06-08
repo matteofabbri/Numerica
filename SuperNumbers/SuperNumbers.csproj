@@ -3,15 +3,29 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
     <RootNamespace>SuperNumbers</RootNamespace>
     <AssemblyName>SuperNumbers</AssemblyName>
   </PropertyGroup>
 
+  <!-- NuGet package metadata (shared settings live in Directory.Build.props). -->
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>SuperNumbers</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Exact, lazy, expression-backed numbers for .NET. Numeric implements INumber&lt;T&gt;, is built from a formula string (sqrt, pi, e, trig, hex, scientific, datetime, base64, ...), and offers exact, decidable comparison for algebraic values.</Description>
+    <PackageTags>math;exact-arithmetic;bignum;rational;algebraic;computable-reals;INumber;expression;parser;arbitrary-precision</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Sprache" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

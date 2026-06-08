@@ -1,0 +1,40 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: new Numeric("...") returned/threw ... but I expected ...
+    validations:
+      required: true
+  - type: input
+    id: formula
+    attributes:
+      label: Formula / minimal repro
+      description: The expression or smallest code snippet that reproduces it.
+      placeholder: new Numeric("sqrt(2) * sqrt(2)")
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: input
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version / environment
+      description: SuperNumbers version, .NET SDK version, OS.
+      placeholder: 0.1.0, .NET 10.0.300, Windows 11
+    validations:
+      required: false

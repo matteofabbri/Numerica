@@ -7,7 +7,7 @@ namespace SuperNumbers;
 /// Exact rational number, stored as <c>Numerator / Denominator</c> in lowest terms
 /// with a strictly positive denominator.
 ///
-/// Unlike the computable reals in <see cref="SuperNumber"/>, here equality is
+/// Unlike the closed-form reals in <see cref="BigIrrational"/>, here equality is
 /// genuinely exact: the rationals are closed under +, -, *, / and integer powers,
 /// so two values are equal iff their reduced fractions match. This is the bottom
 /// floor of the tower (rationals -> algebraic irrationals -> complex).
