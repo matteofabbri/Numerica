@@ -45,10 +45,10 @@ dotnet run --project SAMPLES/Numerica.BasicSample
 
 ## Pull requests
 
-1. Fork and branch from `master` (`feature/...` or `fix/...`).
+1. Fork and branch from `main` (`feature/...` or `fix/...`).
 2. Make focused commits with clear messages.
 3. Ensure `dotnet build` and `dotnet test` pass.
-4. Open the PR against `master` and fill in the template.
+4. Open the PR against `main` and fill in the template.
 
 By contributing you agree that your work is licensed under the
 [MIT License](LICENSE).

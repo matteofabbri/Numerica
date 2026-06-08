@@ -2,12 +2,12 @@
 
 ## Supported versions
 
-Numerica is pre-1.0. Security fixes are applied to the latest `master` and the
+Numerica is pre-1.0. Security fixes are applied to the latest `main` and the
 most recent release.
 
 | Version | Supported |
 | ------- | --------- |
-| latest `master` / newest release | ✅ |
+| latest `main` / newest release | ✅ |
 | older releases | ❌ |
 
 ## Reporting a vulnerability
