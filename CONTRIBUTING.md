@@ -8,7 +8,7 @@ docs, tests, and code.
 You need the **.NET 10 SDK** (or newer). The repo pins it via `global.json`.
 
 ```bash
-git clone https://github.com/OWNER/Numerica.git
+git clone https://github.com/matteofabbri/Numerica.git
 cd Numerica
 dotnet build Numerica.slnx -c Release
 dotnet test  Numerica.slnx -c Release

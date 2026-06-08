@@ -37,5 +37,5 @@ First public preview.
 - Exact equality of closed-form reals is undecidable in general (Richardson's
   theorem); `Numeric` is exact where it provably can be and numeric otherwise.
 
-[Unreleased]: https://github.com/OWNER/Numerica/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/OWNER/Numerica/releases/tag/v0.1.0
+[Unreleased]: https://github.com/matteofabbri/Numerica/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/matteofabbri/Numerica/releases/tag/v0.1.0

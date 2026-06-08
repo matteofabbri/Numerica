@@ -1,6 +1,6 @@
 # Numerica
 
-[![CI](https://github.com/OWNER/Numerica/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/Numerica/actions/workflows/ci.yml)
+[![CI](https://github.com/matteofabbri/Numerica/actions/workflows/ci.yml/badge.svg)](https://github.com/matteofabbri/Numerica/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4.svg)](https://dotnet.microsoft.com)
 

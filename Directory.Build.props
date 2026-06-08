@@ -17,14 +17,13 @@
 
   <!-- Common package / repository metadata. -->
   <PropertyGroup>
-    <Authors>Numerica contributors</Authors>
+    <Authors>Matteo Fabbri</Authors>
     <Company>Numerica</Company>
     <Product>Numerica</Product>
-    <Copyright>Copyright (c) 2026 Numerica contributors</Copyright>
+    <Copyright>Copyright (c) 2026 Matteo Fabbri</Copyright>
     <RepositoryType>git</RepositoryType>
-    <!-- TODO: replace OWNER with the GitHub account/organization. -->
-    <RepositoryUrl>https://github.com/OWNER/Numerica</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/OWNER/Numerica</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/matteofabbri/Numerica</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/matteofabbri/Numerica</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
