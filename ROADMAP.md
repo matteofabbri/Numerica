@@ -13,9 +13,9 @@ see [CONTRIBUTING.md](CONTRIBUTING.md).
   complex exponents (incl. `pow(x, y)` sugar) all landed. Still open: a complex `atan2`
   and more named constants (Catalan, Euler–Mascheroni).
 - **More parser grammar**: ✅ a modulo operator `%`, a postfix factorial `n!`, the
-  reductions `min`/`max`/`gcd`/`lcm`/`mod`, and the rounding family
-  (`floor`/`ceil`/`round`/`trunc`/`sign`) all landed. Still open: optional implicit
-  multiplication (`2pi`, `3(x+1)`).
+  reductions `min`/`max`/`gcd`/`lcm`/`mod`, the rounding family
+  (`floor`/`ceil`/`round`/`trunc`/`sign`), and implicit multiplication (`2pi`, `3(x+1)`)
+  all landed. (Item complete.)
 - **Wider algebraic closure**: today `BigAlgebric`/`AlgebraicReal` builds roots of
   *rationals* and does exact arithmetic on them. Extend to roots of arbitrary
   algebraic numbers (e.g. `sqrt(1 + sqrt(2))`) so nested radicals are decided too.

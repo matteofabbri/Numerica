@@ -20,11 +20,18 @@ n.IsIrrational;          // true
 | `-x` | unary minus | |
 | `x ^ y` | power | right-associative: `2^3^2 == 2^(3^2) == 512` |
 | `n!` | factorial | postfix, exact, non-negative integers; `5! == 120`. Sugar for `fact(n)` |
+| `x y` | implicit `*` | juxtaposition multiplies: `2pi`, `2(x+1)`, `2sqrt(2)`, `(a)(b)` |
 | `( … )` | grouping | |
 
 Precedence, lowest to highest: `+ -` → `* / %` → unary `-` → `^` → `!`.
 Factorial binds tighter than power and unary minus, so `2^3! == 2^(3!) == 64` and
 `-3! == -(3!) == -6`. There is no double-factorial: `n!!` means `(n!)!`.
+
+**Implicit multiplication.** A factor next to one that begins with a letter or `(` is a
+product — `2pi`, `2(x+1)`, `2sqrt(2)`, `(a)(b)`, `3pi^2` (= `3·(pi^2)`). It never
+triggers on a bare number or a leading `-`, so `2 2` is a syntax error and `2 - 3` is
+still subtraction. It sits at the `*` level and is left-associative, so `1/2pi` means
+`(1/2)·pi`, not `1/(2·pi)`.
 
 ## Functions
 

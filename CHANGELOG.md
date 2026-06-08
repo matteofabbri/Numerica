@@ -8,6 +8,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Implicit multiplication** by juxtaposition: a factor next to one that begins with a
+  letter or `(` multiplies — `2pi`, `2(x+1)`, `2sqrt(2)`, `(a)(b)`, `3pi^2`. It never
+  triggers on a bare number or a leading `-`, so `2 2` is a syntax error and `2 - 3`
+  stays subtraction; it is left-associative at the `*` level (`1/2pi == (1/2)·pi`).
 - **`pow(x, y)`** function — sugar for `x ^ y`, sharing the same power evaluation across
   the tower. Real/irrational exponents go through `exp(y·ln x)`; a negative base with a
   real exponent (e.g. `(-2)^pi`) evaluates on the complex level, and `i^i == exp(-pi/2)`.

@@ -11,11 +11,17 @@ namespace Numerica.Parsing;
 /// library. Grammar (lowest to highest precedence):
 ///
 ///   expr   := term   (('+' | '-') term)*
-///   term   := unary  (('*' | '/' | '%') unary)*
+///   term   := unary  (('*' | '/' | '%') unary | implicit)*   (juxtaposition = '*')
+///   implicit := (typedLiteral | call | ident | group) '!'* ('^' unary)?
 ///   unary  := '-' unary | power
 ///   power  := factor ('^' unary)?         (right associative)
 ///   factor := atom '!'*                    (postfix factorial, binds tighter than '^')
 ///   atom   := number | ident '(' expr (',' expr)* ')' | ident | '(' expr ')'
+///
+/// Implicit multiplication: a factor next to one that begins with a letter or '(' (never
+/// a bare number, never a leading '-') multiplies, so "2pi", "2(x+1)", "2sqrt(2)" and
+/// "(a)(b)" are products, while "2 2" and "2 - 3" keep their usual meaning. It is
+/// left-associative at the '*' level, so "1/2pi" is "(1/2)*pi".
 ///
 /// Number literals: integers and big integers ("123", "234...90"), decimals ("1.5"),
 /// scientific notation ("1.23e5", "-1.23e4", "6.02E23"), and hexadecimal ("0xFF").
@@ -167,11 +173,33 @@ internal static class ExpressionParser
          select (Expr)new Expr.Negate(operand))
         .Or(Power);
 
+    // A factor reachable by juxtaposition (implicit multiplication). It must begin with a
+    // letter or '(' -- never a bare number and never a leading '-' -- so "2pi", "2(x+1)",
+    // "2sqrt(2)" and "(a)(b)" multiply, while "2 2" and "2 - 3" keep their usual meaning.
+    // Supports postfix '!' and '^' like a normal power, so "2pi^2" is "2*(pi^2)".
+    private static readonly Parser<Expr> ImplicitFactor =
+        from atom in TypedLiterals.Or(IdentifierExpr).Or(Group)
+        from bangs in Parse.Char('!').Token().Many()
+        from exponent in
+            (from caret in Parse.Char('^').Token()
+             from e in UnaryRef
+             select e).Optional()
+        let withBangs = bangs.Aggregate(atom, (e, _) => (Expr)new Expr.Function("fact", new[] { e }))
+        select exponent.IsDefined ? (Expr)new Expr.Binary('^', withBangs, exponent.Get()) : withBangs;
+
+    // Multiplicative level: explicit '*' '/' '%' (right side may be unary, e.g. "2 * -3"),
+    // plus implicit multiplication by juxtaposition. All left-associative and at the same
+    // precedence, so "1/2pi" is "(1/2)*pi".
     private static readonly Parser<Expr> Term =
-        Parse.ChainOperator(
-            Parse.Char('*').Or(Parse.Char('/')).Or(Parse.Char('%')).Token(),
-            Unary,
-            (op, left, right) => new Expr.Binary(op, left, right));
+        from first in Unary
+        from rest in
+            ((from op in Parse.Chars("*/%").Token()
+              from factor in UnaryRef
+              select (Op: op, Factor: factor))
+             .Or(from factor in ImplicitFactor
+                 select (Op: '*', Factor: factor)))
+            .Many()
+        select rest.Aggregate(first, (left, t) => (Expr)new Expr.Binary(t.Op, left, t.Factor));
 
     private static readonly Parser<Expr> Expression =
         Parse.ChainOperator(
