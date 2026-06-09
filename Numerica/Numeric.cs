@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Numerics;
 using Numerica.Parsing;
+using Numerica.Utils;
 
 namespace Numerica;
 
@@ -90,6 +91,21 @@ public sealed class Numeric : INumber<Numeric>
         }
         value = BigInteger.Zero;
         return false;
+    }
+
+    /// <summary>
+    /// The bytes this value encodes — the inverse of the <c>string(...)</c> and
+    /// <c>base64(...)</c> readers. Those read a byte string <c>b0 b1 ...</c> as the
+    /// order-preserving base-256 fraction <c>0.b0 b1 ...</c> in [0, 1); this recovers
+    /// <c>b0 b1 ...</c> big-endian. Defined for such a fraction — a rational in [0, 1)
+    /// with a power-of-two denominator; <c>0</c> gives an empty span. Throws
+    /// <see cref="InvalidOperationException"/> for anything else.
+    /// </summary>
+    public ReadOnlySpan<byte> AsSpan()
+    {
+        if (!TryExactRational(out BigRational value))
+            throw new InvalidOperationException("AsSpan is defined only for a rational value.");
+        return StringCodec.ToBytes(value);
     }
 
     // The exact rational value, if any. Two independent detectors: the symbolic simplifier

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
+using Numerica.Utils;
 using Sprache;
 
 namespace Numerica.Parsing;
@@ -44,8 +45,9 @@ namespace Numerica.Parsing;
 /// culture-invariant: '.' and ',' both work); rational("3/7") -> an exact fraction;
 /// complex(3+4i) -> a complex number built from existing nodes; hex(FF)/bin(1010)/oct(17)
 /// -> integers in base 16/2/8 (optional 0x/0b/0o prefix, '_' separators); string("ciao")
-/// -> UTF-8 bytes read big-endian as an unsigned integer; base64("SGVsbG8=") -> decoded
-/// bytes the same way (standard or URL-safe alphabet); timespan(1:00:00) -> tick count;
+/// -> UTF-8 bytes read as an order-preserving base-256 fraction in [0, 1) (so numeric
+/// order matches alphabetical order); base64("SGVsbG8=") -> decoded bytes the same way
+/// (standard or URL-safe alphabet); timespan(1:00:00) -> tick count;
 /// datetime(2024-01-15T10:30:00Z) -> UTC ticks; guid(...) -> the 128 bits as an integer.
 /// </summary>
 internal static class ExpressionParser
@@ -424,11 +426,11 @@ internal static class ExpressionParser
         return result.Value;
     }
 
-    // string -> UTF-8 bytes -> big-endian unsigned BigInteger.
+    // string -> UTF-8 bytes -> order-preserving base-256 fraction in [0, 1).
     private static Expr MakeString(string content) => BytesToNumber(Encoding.UTF8.GetBytes(content));
 
-    // base64 -> bytes -> big-endian unsigned BigInteger. Accepts both standard ('+', '/')
-    // and URL-safe ('-', '_') alphabets, with or without '=' padding.
+    // base64 -> bytes -> order-preserving base-256 fraction in [0, 1). Accepts both standard
+    // ('+', '/') and URL-safe ('-', '_') alphabets, with or without '=' padding.
     private static Expr MakeBase64(string content)
     {
         string text = content.Trim().Replace('-', '+').Replace('_', '/');
@@ -440,13 +442,8 @@ internal static class ExpressionParser
         return BytesToNumber(Convert.FromBase64String(text));
     }
 
-    private static Expr BytesToNumber(byte[] bytes)
-    {
-        BigInteger value = bytes.Length == 0
-            ? BigInteger.Zero
-            : new BigInteger(bytes, isUnsigned: true, isBigEndian: true);
-        return new Expr.Number(new BigRational(value));
-    }
+    // Bytes -> the order-preserving base-256 fraction in [0, 1) (see StringCodec).
+    private static Expr BytesToNumber(byte[] bytes) => new Expr.Number(StringCodec.FromBytes(bytes));
 
     // Applies C# string-literal escape semantics to the raw quoted body.
     private static string Unescape(string s)

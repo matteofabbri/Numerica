@@ -31,9 +31,9 @@ public class NumericTypedLiteralTests
     [Fact]
     public void CharDiffersFromString()
     {
-        // char gives the code point; string gives the UTF-8 byte sequence.
+        // char gives the code point; string reads the UTF-8 bytes as a base-256 fraction.
         Assert.True(new Numeric("char(\"Ω\")") == new Numeric(937));
-        Assert.True(new Numeric("string(\"Ω\")") == new Numeric(52905));
+        Assert.True(new Numeric("string(\"Ω\")") == new Numeric("52905/65536"));
     }
 
     [Theory]

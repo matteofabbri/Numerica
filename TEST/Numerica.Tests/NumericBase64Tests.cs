@@ -4,8 +4,8 @@ using Xunit;
 namespace Numerica.Tests;
 
 // base64(<VALUE>) decodes the bytes (standard or URL-safe, with/without padding,
-// with/without quotes) and reads them big-endian as an unsigned integer -- exactly
-// like string(...) does with its UTF-8 bytes.
+// with/without quotes) and reads them as an order-preserving base-256 fraction in
+// [0, 1) -- exactly like string(...) does with its UTF-8 bytes.
 public class NumericBase64Tests
 {
     [Fact]
@@ -31,15 +31,14 @@ public class NumericBase64Tests
     }
 
     [Theory]
-    // bytes {0xFF, 0xFE} = 65534; standard "//4=" uses '/', URL-safe "__4" uses '_'
-    [InlineData("base64(\"//4=\")", 65534)]
-    [InlineData("base64(__4)", 65534)]
-    // bytes {0xFA} = 250; standard "+g==" uses '+', URL-safe "-g" uses '-'
-    [InlineData("base64(\"+g==\")", 250)]
-    [InlineData("base64(-g)", 250)]
-    public void StandardAndUrlSafeAgree(string formula, int expected)
+    // bytes {0xFF, 0xFE} -> 65534/65536; standard "//4=" uses '/', URL-safe "__4" uses '_'
+    [InlineData("base64(\"//4=\")", "base64(__4)", "65534/65536")]
+    // bytes {0xFA} -> 250/256; standard "+g==" uses '+', URL-safe "-g" uses '-'
+    [InlineData("base64(\"+g==\")", "base64(-g)", "250/256")]
+    public void StandardAndUrlSafeAgree(string standard, string urlSafe, string expected)
     {
-        Assert.True(new Numeric(formula) == new Numeric(expected));
+        Assert.True(new Numeric(standard) == new Numeric(urlSafe));
+        Assert.True(new Numeric(standard) == new Numeric(expected));
     }
 
     [Fact]
