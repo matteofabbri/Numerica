@@ -1,15 +1,24 @@
 name: Publish to NuGet
 
-# Publishes the package when a GitHub Release is published (recommended), or manually.
-# Requires a repository secret named NUGET_API_KEY with push rights on nuget.org.
-# Keep the <Version> in Numerica/Numerica.csproj in sync with the release tag.
+# Builds, tests, then publishes:
+#   - push to main / manual run -> an auto-incrementing PRERELEASE  (0.1.0-ci.<run_number>)
+#   - a published GitHub Release -> the STABLE version from Numerica.csproj (VersionPrefix)
+#
+# Auth uses NuGet Trusted Publishing (OIDC) -- no long-lived API key secret. A trusted
+# publishing policy must exist on nuget.org for this repo + workflow (see the README/notes):
+#   Repository Owner: matteofabbri | Repository: Numerica | Workflow File: publish.yml
+# and a repo secret NUGET_USER holding your nuget.org username (profile name, not email).
 on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md']
   release:
     types: [published]
   workflow_dispatch:
 
 permissions:
   contents: read
+  id-token: write   # required: lets the job request the GitHub OIDC token for the exchange
 
 jobs:
   publish:
@@ -22,12 +31,35 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # Stable on a Release; an auto-incrementing prerelease suffix on every other trigger.
+      - name: Compute version args
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "args=" >> "$GITHUB_OUTPUT"
+          else
+            echo "args=--version-suffix ci.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build
+        run: dotnet build Numerica.slnx -c Release ${{ steps.ver.outputs.args }}
+
+      - name: Test
+        run: dotnet test Numerica.slnx -c Release --no-build --verbosity normal
+
       - name: Pack
-        run: dotnet pack Numerica.slnx -c Release -o ${{ github.workspace }}/artifacts
+        run: dotnet pack Numerica/Numerica.csproj -c Release --no-build -o ${{ github.workspace }}/artifacts ${{ steps.ver.outputs.args }}
+
+      # Exchange the OIDC token for a short-lived (1 h) nuget.org API key.
+      - name: NuGet login (Trusted Publishing)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
 
       - name: Push to NuGet
         run: >
           dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg"
-          --api-key "${{ secrets.NUGET_API_KEY }}"
+          --api-key "${{ steps.login.outputs.NUGET_API_KEY }}"
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate

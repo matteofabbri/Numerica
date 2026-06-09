@@ -11,7 +11,9 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Numerica</PackageId>
-    <Version>0.1.0</Version>
+    <!-- Stable version base. CI appends a -ci.<run> suffix on push (prerelease); a
+         published GitHub Release packs this bare (stable). Bump for stable releases. -->
+    <VersionPrefix>0.1.0</VersionPrefix>
     <Description>Exact, lazy, expression-backed numbers for .NET. Numeric implements INumber&lt;T&gt;, is built from a formula string (sqrt, pi, e, trig, hex, scientific, datetime, base64, ...), and offers exact, decidable comparison for algebraic values.</Description>
     <PackageTags>math;exact-arithmetic;bignum;rational;algebraic;computable-reals;INumber;expression;parser;arbitrary-precision</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
